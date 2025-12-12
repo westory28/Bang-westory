@@ -19,11 +19,6 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f5f4; margin: 0; padding: 0; }
         
-        /* [중요] CSS 충돌 방지를 위해 .hidden 클래스 정의를 삭제하고 직접 스타일로 제어합니다. */
-        
-        /* 로딩/에러 로그창 스타일 */
-        #debug-console { position: fixed; bottom: 0; left: 0; right: 0; height: 120px; background: rgba(0,0,0,0.8); color: lime; overflow-y: scroll; z-index: 99999; padding: 10px; font-size: 12px; font-family: monospace; display: none; }
-        
         /* 테이블 및 버튼 스타일 */
         .admin-table th, .admin-table td { border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
         .admin-table th:not(:last-child), .admin-table td:not(:last-child) { border-right: 2px solid #d6d3d1; }
@@ -46,11 +41,6 @@
 </head>
 <body class="text-stone-800 min-h-screen">
 
-    <div id="debug-console">
-        <button onclick="app.forceShowDashboard()" style="background:red; color:white; padding:2px 5px; border:1px solid white; margin-bottom:5px;">[비상용] 대시보드 강제 열기</button>
-        <div id="debug-logs"></div>
-    </div>
-    
     <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold">처리 중...</p></div>
     <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
 
@@ -61,7 +51,7 @@
             <button onclick="app.login()" class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded shadow hover:bg-gray-50 flex items-center justify-center gap-2 transition cursor-pointer">
                 <i class="fab fa-google text-red-500"></i> 구글 계정으로 로그인
             </button>
-            <p class="text-xs text-gray-400 mt-4">오류 발생 시 화면 아래 검은창 확인</p>
+            <p class="text-xs text-gray-400 mt-4">용신중학교 역사과 방재석</p>
         </div>
     </div>
 
@@ -138,41 +128,27 @@
 
     <div id="student-detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('student-detail-modal').style.display='none'"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">상세 정보</h3><div id="student-detail-content"></div><div class="mt-4 text-center"><button onclick="document.getElementById('student-detail-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
     <div id="preview-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('preview-modal').style.display='none'"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"><div id="preview-content"></div><div class="mt-6 text-center"><button onclick="document.getElementById('preview-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
-    <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="app.closeEditModal()"></div><div class="bg-white p-6 rounded-lg shadow-xl z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">문제 수정</h3><input type="hidden" id="edit-q-id"><div class="space-y-4"><div><label class="block text-sm font-bold mb-1">단원</label><select id="edit-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div><div><label class="block text-sm font-bold mb-1">유형</label><select id="edit-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('edit')"><option value="choice">객관식</option><option value="word">단답형</option><option value="order">순서 맞추기</option><option value="ox">O/X 퀴즈</option></select></div><div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="edit-q-image-input" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'edit')"><img id="edit-q-image-preview" style="display:none;" class="q-image-thumb mt-2"><input type="hidden" id="edit-q-image-base64"><button onclick="document.getElementById('edit-q-image-preview').style.display='none';document.getElementById('edit-q-image-base64').value='';" class="text-red-500 text-xs">이미지 삭제</button></div><div><label class="block text-sm font-bold mb-1">문제</label><textarea id="edit-q-text" class="w-full p-2 border rounded h-20"></textarea></div><div id="option-container-edit"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="edit-q-options" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="edit-q-answer" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="edit-q-exp" class="w-full p-2 border rounded"></div><div class="flex gap-2 pt-2"><button onclick="app.saveEditedQuestion()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded">저장</button><button onclick="app.closeEditModal()" class="flex-1 bg-stone-200 text-stone-700 font-bold py-3 rounded">취소</button></div></div></div></div>
+    <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="app.closeEditModal()"></div><div class="bg-white p-6 rounded-lg shadow-xl z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">문제 수정</h3><input type="hidden" id="edit-q-id"><div class="space-y-4"><div><label class="block text-sm font-bold mb-1">단원</label><select id="edit-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div><div><label class="block text-sm font-bold mb-1">유형</label><select id="edit-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('edit')"><option value="choice">객관식</option><option value="word">단답형</option><option value="order">순서 맞추기</option><option value="ox">O/X 퀴즈</option></select></div><div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="edit-q-image-input" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'edit')"><img id="edit-q-image-preview" class="hidden q-image-thumb mt-2"><input type="hidden" id="edit-q-image-base64"><button onclick="document.getElementById('edit-q-image-preview').style.display='none';document.getElementById('edit-q-image-base64').value='';" class="text-red-500 text-xs">이미지 삭제</button></div><div><label class="block text-sm font-bold mb-1">문제</label><textarea id="edit-q-text" class="w-full p-2 border rounded h-20"></textarea></div><div id="option-container-edit"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="edit-q-options" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="edit-q-answer" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="edit-q-exp" class="w-full p-2 border rounded"></div><div class="flex gap-2 pt-2"><button onclick="app.saveEditedQuestion()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded">저장</button><button onclick="app.closeEditModal()" class="flex-1 bg-stone-200 text-stone-700 font-bold py-3 rounded">취소</button></div></div></div></div>
 
     <script>
-        function log(msg) {
-            console.log(msg);
-            const box = document.getElementById('debug-logs');
-            const container = document.getElementById('debug-console');
-            container.style.display = 'block';
-            box.innerHTML += `<div>> ${msg}</div>`;
-            container.scrollTop = container.scrollHeight;
-        }
-        window.onerror = function(msg, url, line) {
-            log(`❌ ERROR: ${msg} (Line ${line})`);
-            return false;
-        };
-
         const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
         let db; 
         try { 
-            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); log("Firebase 초기화 완료"); } 
+            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
             db = firebase.firestore(); 
-        } catch(e) { log("Firebase 초기화 실패: " + e.message); }
+        } catch(e) { console.error("Firebase 초기화 실패", e); }
 
         const TEACHER_EMAIL = "westoria28@gmail.com";
 
         const app = {
             state: { allQuestions:[], logs:[], questionStats: {}, logPage: 1, logsPerPage: 50 },
             init: function() {
-                if (typeof firebase === 'undefined' || !firebase.auth) { log("Firebase 로드 실패"); return; }
+                if (typeof firebase === 'undefined' || !firebase.auth) { alert("Firebase 로드 실패"); return; }
                 
                 firebase.auth().onAuthStateChanged((user) => {
                     if (user) {
-                        log("로그인 상태: " + user.email);
                         if(user.email === TEACHER_EMAIL) {
-                            // [핵심] display 속성을 직접 변경합니다.
+                            // 화면 전환
                             document.getElementById('view-login-screen').style.display = 'none';
                             document.getElementById('view-dashboard').style.display = 'block';
                             
@@ -180,28 +156,18 @@
                             this.loadServerLogs();
                             this.setTeacherTab('log');
                         } else {
-                            log("권한 없는 계정");
                             alert("허용되지 않은 계정: " + user.email);
                             firebase.auth().signOut();
                         }
                     } else {
-                        log("로그아웃 상태");
                         document.getElementById('view-login-screen').style.display = 'flex';
                         document.getElementById('view-dashboard').style.display = 'none';
                     }
                 });
             },
-            // [비상용] 대시보드 강제 열기 함수
-            forceShowDashboard: function() {
-                document.getElementById('view-login-screen').style.display = 'none';
-                document.getElementById('view-dashboard').style.display = 'block';
-                log("사용자에 의해 대시보드 강제 표시됨");
-            },
             login: function() {
-                log("구글 로그인 시도...");
                 const provider = new firebase.auth.GoogleAuthProvider();
                 firebase.auth().signInWithPopup(provider).catch(e => {
-                    log("로그인 실패: " + e.message);
                     alert("로그인 에러: " + e.message);
                 });
             },
@@ -212,24 +178,22 @@
             
             setTeacherTab: function(tab) {
                 ['log','bank','add'].forEach(t => {
-                    document.getElementById('tab-'+t).style.display = 'none'; // style로 제어
+                    document.getElementById('tab-'+t).style.display = 'none'; 
                     const btn = document.getElementById('btn-tab-'+t);
                     if(t===tab) btn.className = "px-5 py-2 rounded-full bg-stone-800 text-white text-sm font-bold shadow transition";
                     else btn.className = "px-5 py-2 rounded-full bg-stone-100 text-stone-600 text-sm font-bold shadow transition";
                 });
-                document.getElementById('tab-'+tab).style.display = 'block'; // style로 제어
+                document.getElementById('tab-'+tab).style.display = 'block'; 
                 if(tab === 'log') this.loadServerLogs(); else if (tab === 'add') this.updateNextQuestionNumber(); else this.renderBank();
             },
             loadServerLogs: function() {
                 if(!db) return;
-                log("기록 로딩 시작...");
                 document.getElementById('teacher-log-body').innerHTML = '<tr><td colspan="6" class="p-4 text-center">로딩 중...</td></tr>';
                 db.collection("quiz_results").orderBy("timestamp", "desc").get().then((querySnapshot) => {
                     let logs = []; querySnapshot.forEach((doc) => { let d = doc.data(); d.docId = doc.id; logs.push(d); });
-                    log(`기록 ${logs.length}건 로드 성공`);
                     this.state.logs = logs; this.state.logPage = 1; this.renderLogs(); document.getElementById('log-count').innerText = `(${logs.length}건)`;
                 }).catch(e => {
-                    log("기록 로드 에러: " + e.message);
+                    console.error("기록 로드 에러:", e);
                 });
             },
             renderLogs: function() {
@@ -252,13 +216,11 @@
             },
             changeLogPage: function(p) { this.state.logPage = p; this.renderLogs(); },
             loadQuestionsFromFirebase: function() {
-                log("문제 로딩 시작...");
                 db.collection("quiz_questions").get().then((querySnapshot) => {
                     const loadedData = []; querySnapshot.forEach((doc) => { let data = doc.data(); data.id = parseInt(doc.id); loadedData.push(data); });
                     loadedData.sort((a, b) => a.id - b.id); this.state.allQuestions = loadedData; 
-                    log(`문제 ${loadedData.length}건 로드 성공`);
                     if(document.getElementById('tab-bank').style.display !== 'none') this.renderBank();
-                }).catch((e) => { log("문제 로드 에러: " + e.message); });
+                }).catch((e) => { console.error("문제 로드 에러:", e); });
             },
             calculateStats: function() {
                 const stats = {};
