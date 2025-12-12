@@ -1,130 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>교사 대시보드 (진단모드)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f5f4; }
-        #debug-console { position: fixed; bottom: 0; left: 0; right: 0; height: 150px; background: rgba(0,0,0,0.8); color: lime; overflow-y: scroll; z-index: 99999; padding: 10px; font-size: 12px; font-family: monospace; display: none; }
-        #view-login-screen { display: flex; }
-        #view-dashboard { display: none; }
-        .hidden { display: none !important; }
-        /* 테이블 스타일 */
-        .admin-table th, .admin-table td { border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
-        .admin-table th:not(:last-child), .admin-table td:not(:last-child) { border-right: 2px solid #d6d3d1; }
-        .col-answer { background-color: #fffbeb; color: #b45309; font-weight: bold; }
-        .rate-bar-bg { background-color: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; width: 100%; margin-top: 4px; }
-        .rate-bar-fill { height: 100%; transition: width 0.5s ease; }
-        .page-btn { padding: 6px 12px; margin: 0 2px; border: 1px solid #d1d5db; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem; }
-        .page-btn.active { background-color: #4b5563; color: white; border-color: #4b5563; font-weight: bold; }
-        .choice-btn { width: 100%; text-align: left; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background-color: white; margin-bottom: 0.5rem; }
-        .choice-btn.selected { border: 2px solid #d97706; background-color: #fffbeb; color: #92400e; font-weight: bold; }
-        .choice-badge { width: 1.5rem; height: 1.5rem; border-radius: 9999px; background-color: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; margin-right: 0.75rem; }
-        .ox-btn { height: 60px; font-size: 1.5rem; font-weight: bold; width: 100%; border: 1px solid #ccc; border-radius: 8px; }
-        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        .q-image-thumb { max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid #ddd; cursor: zoom-in; }
-        #image-zoom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; cursor: zoom-out; }
-        #image-zoom-content { max-width: 95%; max-height: 95%; border-radius: 4px; }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
-    </style>
-</head>
-<body class="text-stone-800 min-h-screen">
-
-    <div id="debug-console"></div>
-    <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold">처리 중...</p></div>
-    <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
-
-    <div id="view-login-screen" class="flex items-center justify-center min-h-screen flex-col bg-stone-100 p-4">
-        <div class="bg-white p-8 rounded-xl shadow-xl max-w-sm w-full text-center border-t-4 border-amber-600">
-            <h1 class="text-2xl font-bold mb-2">교사 인증</h1>
-            <p class="text-stone-500 mb-8 text-sm">구글 계정으로 로그인하세요.</p>
-            <button onclick="app.login()" class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded shadow hover:bg-gray-50 flex items-center justify-center gap-2 transition cursor-pointer">
-                <i class="fab fa-google text-red-500"></i> 구글 계정으로 로그인
-            </button>
-            <p class="text-xs text-gray-400 mt-4">오류 발생 시 화면 아래 검은창 확인</p>
-        </div>
-    </div>
-
-    <div id="view-dashboard" class="hidden p-6 max-w-7xl mx-auto">
-        <div class="bg-white p-6 rounded shadow-xl border border-stone-300">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <div><h2 class="font-bold text-2xl text-stone-800"><i class="fas fa-chalkboard-teacher text-amber-600 mr-2"></i>교사 대시보드</h2><p class="text-xs text-stone-500 mt-1">Firebase 연동됨</p></div>
-                <button onclick="app.logout()" class="bg-stone-200 hover:bg-stone-300 text-stone-700 px-4 py-2 rounded text-sm font-bold">로그아웃</button>
-            </div>
-            <div class="flex flex-wrap gap-2 mb-6">
-                <button onclick="app.setTeacherTab('log')" id="btn-tab-log" class="px-5 py-2 rounded-full bg-stone-800 text-white text-sm font-bold shadow transition">실시간 기록</button>
-                <button onclick="app.setTeacherTab('bank')" id="btn-tab-bank" class="px-5 py-2 rounded-full bg-stone-100 text-stone-600 text-sm font-bold shadow transition">문제 은행</button>
-                <button onclick="app.setTeacherTab('add')" id="btn-tab-add" class="px-5 py-2 rounded-full bg-stone-100 text-stone-600 text-sm font-bold shadow transition">문제 추가</button>
-            </div>
-
-            <div id="tab-log">
-                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                    <h3 class="font-bold text-lg flex items-center">제출 현황 <span id="log-count" class="text-sm font-normal text-stone-500 ml-2"></span></h3>
-                    <div class="flex gap-2 items-center">
-                        <select id="filter-class" onchange="app.renderLogs()" class="p-2 border rounded text-sm"><option value="all">전체 반</option><option value="1">1반</option><option value="2">2반</option><option value="3">3반</option><option value="4">4반</option><option value="5">5반</option><option value="6">6반</option><option value="7">7반</option><option value="8">8반</option><option value="9">9반</option><option value="10">10반</option></select>
-                        <button onclick="app.deleteSelectedLogs()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-trash"></i> 삭제</button>
-                        <button onclick="app.loadServerLogs()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-sync-alt"></i></button>
-                        <button onclick="app.downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-file-excel"></i> 엑셀</button>
-                    </div>
-                </div>
-                <div class="overflow-auto max-h-[600px] border rounded bg-stone-50">
-                    <table class="w-full text-sm text-left admin-table"><thead class="bg-stone-200 text-stone-700 sticky top-0 font-bold"><tr><th class="p-3 w-10 text-center"><input type="checkbox" onchange="document.querySelectorAll('.log-checkbox').forEach(cb=>cb.checked=this.checked)"></th><th class="p-3">시간</th><th class="p-3">정보</th><th class="p-3">점수</th><th class="p-3">상태</th><th class="p-3">삭제</th></tr></thead><tbody id="teacher-log-body" class="bg-white"></tbody></table>
-                </div>
-                <div id="pagination-controls" class="flex justify-center gap-2 mt-4"></div>
-            </div>
-
-            <div id="tab-bank" class="hidden">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 bg-stone-50 p-3 rounded border border-stone-200 gap-3">
-                    <h3 class="font-bold text-lg">전체 문제 <span id="total-q-count" class="text-sm text-stone-500"></span></h3>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="app.deleteSelectedQuestions()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-xs font-bold"><i class="fas fa-trash"></i> 삭제</button>
-                        <button onclick="app.resetServerQuestions()" class="bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-200">초기화</button>
-                    </div>
-                </div>
-                <div class="overflow-auto max-h-[500px] border rounded bg-stone-50">
-                    <table class="w-full text-sm text-left admin-table"><thead class="bg-stone-200 text-stone-700 sticky top-0 font-bold"><tr><th class="p-3 w-10 text-center"><input type="checkbox" onchange="document.querySelectorAll('.q-checkbox').forEach(cb=>cb.checked=this.checked)"></th><th class="p-3 w-16 text-center">ID</th><th class="p-3 w-32">단원</th><th class="p-3 w-20 text-center">유형</th><th class="p-3">문제</th><th class="p-3 w-20 text-center">보기</th><th class="p-3 w-32 col-answer text-center">정답</th><th class="p-3 w-24 text-center">정답률</th></tr></thead><tbody id="bank-body" class="bg-white"></tbody></table>
-                </div>
-            </div>
-
-            <div id="tab-add" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-stone-50 p-6 rounded border border-stone-200">
-                        <div class="flex justify-between items-center mb-4 border-b pb-2"><h3 class="font-bold text-xl">문제 만들기</h3><span id="next-q-id-display" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200"></span></div>
-                        <div class="space-y-4">
-                            <div><label class="block text-sm font-bold mb-1">단원</label><select id="new-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div>
-                            <div><label class="block text-sm font-bold mb-1">유형</label><select id="new-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('new')"><option value="choice">객관식</option><option value="word">단답형</option><option value="order">순서 맞추기</option><option value="ox">O/X 퀴즈</option></select></div>
-                            <div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="new-q-image" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'new')"><img id="new-q-image-preview" class="hidden mt-2 h-20 rounded border"><input type="hidden" id="new-q-image-base64"></div>
-                            <div><label class="block text-sm font-bold mb-1">문제</label><textarea id="new-q-text" class="w-full p-2 border rounded h-20"></textarea></div>
-                            <div id="option-container-new"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="new-q-options" class="w-full p-2 border rounded"></div>
-                            <div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="new-q-answer" class="w-full p-2 border rounded"></div>
-                            <div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="new-q-exp" class="w-full p-2 border rounded"></div>
-                            <button onclick="app.addCustomQuestion()" class="w-full bg-amber-600 text-white font-bold py-3 rounded hover:bg-amber-700">추가하기</button>
-                        </div>
-                    </div>
-                    <div class="bg-green-50 p-6 rounded border border-green-200 h-fit">
-                        <h3 class="font-bold text-xl mb-4 border-b pb-2 text-green-800">엑셀 업로드</h3>
-                        <input type="file" id="excel-file" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 mb-4"/>
-                        <button onclick="app.uploadExcel()" class="w-full bg-green-600 text-white font-bold py-3 rounded hover:bg-green-700 mb-4">엑셀 업로드 시작</button>
-                        <div class="text-center"><button onclick="app.downloadTemplate()" class="text-xs text-gray-500 underline">양식 다운로드</button></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="student-detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('student-detail-modal').classList.add('hidden')"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">상세 정보</h3><div id="student-detail-content"></div><div class="mt-4 text-center"><button onclick="document.getElementById('student-detail-modal').classList.add('hidden')" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
-    <div id="preview-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('preview-modal').classList.add('hidden')"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"><div id="preview-content"></div><div class="mt-6 text-center"><button onclick="document.getElementById('preview-modal').classList.add('hidden')" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
-    <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="app.closeEditModal()"></div><div class="bg-white p-6 rounded-lg shadow-xl z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">문제 수정</h3><input type="hidden" id="edit-q-id"><div class="space-y-4"><div><label class="block text-sm font-bold mb-1">단원</label><select id="edit-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div><div><label class="block text-sm font-bold mb-1">유형</label><select id="edit-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('edit')"><option value="choice">객관식</option><option value="word">단답형</option><option value="order">순서 맞추기</option><option value="ox">O/X 퀴즈</option></select></div><div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="edit-q-image-input" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'edit')"><img id="edit-q-image-preview" class="hidden q-image-thumb mt-2"><input type="hidden" id="edit-q-image-base64"><button onclick="document.getElementById('edit-q-image-preview').classList.add('hidden');document.getElementById('edit-q-image-base64').value='';" class="text-red-500 text-xs">이미지 삭제</button></div><div><label class="block text-sm font-bold mb-1">문제</label><textarea id="edit-q-text" class="w-full p-2 border rounded h-20"></textarea></div><div id="option-container-edit"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="edit-q-options" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="edit-q-answer" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="edit-q-exp" class="w-full p-2 border rounded"></div><div class="flex gap-2 pt-2"><button onclick="app.saveEditedQuestion()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded">저장</button><button onclick="app.closeEditModal()" class="flex-1 bg-stone-200 text-stone-700 font-bold py-3 rounded">취소</button></div></div></div></div>
-
-    <script>
+<script>
         // 진단용 로그 함수
         function log(msg) {
             console.log(msg);
@@ -151,14 +25,21 @@
             state: { allQuestions:[], logs:[], questionStats: {}, logPage: 1, logsPerPage: 50 },
             init: function() {
                 if (typeof firebase === 'undefined' || !firebase.auth) { log("Firebase 로드 실패"); return; }
-                log("인증 상태 확인 중...");
                 
                 firebase.auth().onAuthStateChanged((user) => {
                     if (user) {
                         log("로그인 감지: " + user.email);
                         if(user.email === TEACHER_EMAIL) {
-                            document.getElementById('view-login-screen').style.display = 'none';
-                            document.getElementById('view-dashboard').style.display = 'block';
+                            // [수정된 부분] 투명망토(hidden 클래스)를 강제로 제거하고 화면을 보여줍니다.
+                            const loginScreen = document.getElementById('view-login-screen');
+                            const dashboard = document.getElementById('view-dashboard');
+                            
+                            loginScreen.style.display = 'none';
+                            loginScreen.classList.add('hidden');
+                            
+                            dashboard.classList.remove('hidden'); // 핵심 수정: 숨김 클래스 제거
+                            dashboard.style.display = 'block';    // 화면 표시
+                            
                             this.loadQuestionsFromFirebase();
                             this.loadServerLogs();
                             this.setTeacherTab('log');
@@ -168,12 +49,13 @@
                             firebase.auth().signOut();
                         }
                     } else {
-                        log("로그아웃 상태임");
                         document.getElementById('view-login-screen').style.display = 'flex';
+                        document.getElementById('view-login-screen').classList.remove('hidden');
                         document.getElementById('view-dashboard').style.display = 'none';
                     }
                 });
             },
+            // ... (나머지 코드는 동일하지만 안전을 위해 전체 포함) ...
             login: function() {
                 log("로그인 팝업 시도...");
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -270,5 +152,3 @@
         };
         window.onload = function() { app.init(); };
     </script>
-</body>
-</html>
