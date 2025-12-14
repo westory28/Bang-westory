@@ -1,8 +1,116 @@
-<script>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>용신중학교 역사 평가</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f5f4; }
+        .serif { font-family: 'Noto Serif KR', serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .timer-bar { transition: width 1s linear; }
+        .timer-urgent { background-color: #ef4444 !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .choice-btn { width: 100%; text-align: left; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background-color: white; transition: all 0.2s; display: flex; align-items: center; cursor: pointer; }
+        .choice-btn:hover { background-color: #f5f5f4; }
+        .choice-btn.selected { border: 2px solid #d97706; background-color: #fffbeb; color: #92400e; font-weight: bold; }
+        .choice-badge { width: 1.5rem; height: 1.5rem; border-radius: 9999px; background-color: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; margin-right: 0.75rem; }
+        .choice-btn.selected .choice-badge { background-color: #d97706; color: white; }
+        .ox-btn { height: 80px; font-size: 2.5rem; font-weight: 900; border-radius: 12px; transition: all 0.2s; border: 2px solid transparent; width: 100%; cursor: pointer;}
+        .ox-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-o { background-color: #e0f2fe; color: #0284c7; border-color: #0284c7; }
+        .btn-o.selected { background-color: #0284c7; color: white; border: 2px solid #0c4a6e;}
+        .btn-x { background-color: #fee2e2; color: #dc2626; border-color: #dc2626; }
+        .btn-x.selected { background-color: #dc2626; color: white; border: 2px solid #7f1d1d;}
+        .seq-btn { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: 1px solid #d1d5db; transition: all 0.2s; cursor: pointer; margin: 4px; }
+        .seq-btn-default { background-color: #ffffff !important; color: #1f2937 !important; }
+        .seq-btn-selected { background-color: #d97706 !important; color: #ffffff !important; border-color: #b45309 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .q-image-thumb { max-width: 100%; max-height: 250px; border-radius: 8px; margin: 10px auto; border: 1px solid #e5e7eb; display: block; object-fit: contain; cursor: zoom-in; transition: transform 0.2s; }
+        #image-zoom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; cursor: zoom-out; }
+        #image-zoom-content { max-width: 95%; max-height: 95%; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-stone-800 min-h-screen flex flex-col">
+    <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold text-stone-700">로딩 중...</p></div>
+    <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
+
+    <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4"><h1 class="text-lg md:text-xl font-bold tracking-tight truncate"><span class="mr-2">🧑‍🏫</span> 용신중학교 역사교사 방재석</h1></div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <section id="view-login" class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg fade-in mt-8 border-t-4 border-amber-500">
+            <div class="text-center mb-8">
+                <span class="bg-amber-100 text-amber-900 text-sm font-bold px-3 py-1 rounded-full">용신중학교 2학년 2학기 역사1</span>
+                <h2 class="text-2xl font-bold serif text-stone-900 mt-4">당신의 역사 실력은?</h2>
+                <p class="text-red-500 font-bold text-sm mt-2"><i class="fas fa-stopwatch mr-1"></i> 제한시간 60초 (5문제)</p>
+            </div>
+            <div class="space-y-4">
+                <div class="flex gap-2">
+                    <div class="w-1/4 bg-stone-100 border border-stone-300 rounded flex items-center justify-center font-bold text-stone-600">2학년</div>
+                    <select id="input-class" class="w-2/4 p-3 border border-stone-300 rounded"><option value="">반</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+                    <input type="number" id="input-number" placeholder="번호" class="w-1/4 p-3 border border-stone-300 rounded text-center">
+                </div>
+                <input type="text" id="input-name" placeholder="이름" class="w-full p-3 border border-stone-300 rounded">
+                <button onclick="app.startQuiz()" class="w-full bg-stone-900 text-white font-bold py-4 rounded-lg hover:bg-stone-700 transition shadow-lg mt-4">도전 시작 <i class="fas fa-play ml-2"></i></button>
+            </div>
+        </section>
+
+        <section id="view-quiz" class="hidden max-w-2xl mx-auto fade-in">
+            <div class="bg-white rounded-lg shadow-sm mb-6 sticky top-20 z-30 overflow-hidden border border-stone-200">
+                <div class="flex justify-between items-center px-4 py-2 bg-stone-50 border-b border-stone-100">
+                    <span class="text-sm font-bold text-stone-600" id="quiz-progress-text">1 / 5</span>
+                    <span class="text-lg font-bold text-red-600 font-mono" id="timer-text">60초</span>
+                </div>
+                <div class="w-full bg-stone-200 h-2"><div id="timer-bar" class="bg-amber-500 h-full timer-bar" style="width: 100%"></div></div>
+            </div>
+            <div class="bg-white p-6 md:p-10 rounded-lg min-h-[400px] flex flex-col relative shadow-md">
+                <div class="mb-4"><span id="student-question-unit" class="inline-block bg-stone-100 text-stone-500 text-xs font-bold px-2 py-1 rounded mb-1 border border-stone-200"></span><span id="question-badge" class="ml-2 bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded border border-amber-200"></span></div>
+                <div id="question-image-area" class="mb-4 hidden text-center"><img id="question-image" src="" class="q-image-thumb" onclick="document.getElementById('image-zoom-content').src=this.src;document.getElementById('image-zoom-modal').style.display='flex'"></div>
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold mt-2 mb-8 text-stone-900 leading-relaxed serif break-keep"></h3>
+                <div id="answer-area" class="flex-grow mb-6"></div>
+                <div class="flex gap-3 mt-auto">
+                    <button id="btn-prev" onclick="app.prevQuestion()" class="hidden w-1/3 bg-stone-200 text-stone-700 font-bold py-4 rounded-lg hover:bg-stone-300">이전</button>
+                    <button id="btn-next" onclick="app.submitAnswer()" class="w-full bg-amber-600 text-white font-bold py-4 rounded-lg hover:bg-amber-700 shadow-md">다음</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-results" class="hidden max-w-lg mx-auto fade-in mt-6">
+            <div class="bg-white p-8 rounded-xl shadow-xl text-center border-t-8 border-amber-500">
+                <h2 class="text-3xl font-bold serif mb-2 text-stone-800">평가 종료</h2>
+                <p class="text-stone-500 mb-6"><span id="result-name" class="font-bold text-stone-900"></span> 학생의 최종 기록</p>
+                <div class="relative w-48 h-48 mx-auto mb-4"><canvas id="scoreChart"></canvas><div class="absolute inset-0 flex items-center justify-center flex-col"><span class="text-5xl font-bold text-amber-600 font-mono" id="score-text">0</span><span class="text-xs text-stone-400">점</span></div></div>
+                <div id="submission-status" class="bg-stone-50 p-3 rounded text-sm mb-6 border border-stone-200 text-stone-500"><i class="fas fa-circle-notch fa-spin"></i> 데이터 저장 중...</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="document.getElementById('review-section').classList.toggle('hidden')" class="bg-white border-2 border-stone-200 text-stone-700 font-bold py-3 rounded hover:bg-stone-50">오답노트</button>
+                    <button onclick="location.reload()" class="bg-stone-900 text-white font-bold py-3 rounded hover:bg-stone-700 shadow-lg">다시 도전</button>
+                </div>
+            </div>
+            <div id="review-section" class="hidden mt-6 bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <h3 class="font-bold text-lg mb-4 text-red-600 border-b pb-2">오답 확인</h3>
+                <div id="review-list" class="space-y-4 text-left"></div>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-stone-100 py-6 mt-8 border-t border-stone-200 text-center"><p class="text-stone-400 text-xs font-bold font-mono">Copyright © 용신중학교 역사교사 방재석.</p></footer>
+
+    <script>
         const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
         
         let db; 
         try { 
+            // 여기가 에러가 나던 부분입니다. 이제는 head에서 라이브러리를 불러오므로 정상 작동할 것입니다.
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
             db = firebase.firestore(); 
         } catch(e) { 
@@ -13,7 +121,7 @@
         const app = {
             state: { student:{}, questions:[], allQuestions:[], currentIndex:0, answers:{}, score:0, timer:null, timeLeft:60, isTimeOut:false, isQuizActive: false },
             
-            init: function() { }, // 초기화 시 자동 실행 없음
+            init: function() { },
 
             showLoading: function(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; },
 
@@ -22,12 +130,12 @@
                 const num = document.getElementById('input-number').value;
                 const name = document.getElementById('input-name').value.trim();
 
-                if(!cls || !num || !name) { alert("정보를 모두 입력하세요."); return; }
+                if(!cls || !num || !name) { alert("학년, 반, 번호, 이름을 모두 입력하세요."); return; }
                 
                 this.showLoading(true);
 
                 try {
-                    // [부정행위 방지] 10분 내 재응시 체크
+                    // [1. 부정행위 방지] 10분 내 재응시 체크
                     const logsRef = db.collection("quiz_results");
                     const snapshot = await logsRef
                         .where("class", "==", cls)
@@ -46,16 +154,16 @@
 
                             if (diffMins < 10) {
                                 this.showLoading(false);
-                                alert(`⛔ 재응시 불가!\n\n${Math.ceil(10 - diffMins)}분 뒤에 다시 시도할 수 있습니다.`);
+                                alert(`⛔ 재응시 불가!\n\n부정행위 방지를 위해 제출 후 10분 동안은 다시 응시할 수 없습니다.\n약 ${Math.ceil(10 - diffMins)}분 뒤에 다시 시도해주세요.`);
                                 return; 
                             }
                         }
                     }
 
-                    // [문제 로드]
+                    // [2. 문제 로드]
                     await this.loadRandomQuestions();
 
-                    // 문제가 하나도 안 뽑혔을 경우 (안전장치)
+                    // 문제가 하나도 안 뽑혔을 경우
                     if(!this.state.allQuestions || this.state.allQuestions.length === 0) {
                         throw new Error("로드된 문제가 없습니다.");
                     }
@@ -63,9 +171,10 @@
                 } catch(e) {
                     console.error("Error Detail:", e);
                     this.showLoading(false);
-                    // 구체적인 에러 메시지 출력
                     if (e.code === 'permission-denied') {
-                        alert("오류: 데이터베이스 접근 권한이 없습니다. (규칙 설정 확인 필요)");
+                        alert("오류: 데이터베이스 접근 권한이 없습니다.");
+                    } else if (e.message.includes("Missing or insufficient permissions")) {
+                        alert("오류: DB 인덱스 혹은 권한 설정을 확인하세요.");
                     } else {
                         alert("문제를 불러오는 중 오류가 발생했습니다.\n" + e.message);
                     }
@@ -91,22 +200,22 @@
             loadRandomQuestions: async function() {
                 if(!db) return;
                 
-                let totalCount = 132; // [안전장치] 메타데이터 없으면 기본값 132 사용
+                let totalCount = 132; 
 
+                // [안전장치] 메타데이터가 있으면 가져오고, 없거나 에러나면 132 사용
                 try {
                     const metaDoc = await db.collection("metadata").doc("count_info").get();
                     if (metaDoc.exists) {
                         totalCount = metaDoc.data().total_questions || 132;
                     } else {
-                        console.warn("⚠️ 메타데이터 없음. 기본값(132)을 사용합니다.");
+                        console.warn("메타데이터 문서가 없어 기본값(132)을 사용합니다.");
                     }
                 } catch(e) {
-                    console.warn("⚠️ 메타데이터 읽기 실패. 기본값(132)을 사용합니다.", e);
+                    console.warn("메타데이터 읽기 실패, 기본값(132) 사용:", e);
                 }
                 
                 // 랜덤 번호 5개 추첨
                 const randomIds = new Set();
-                // 안전장치: 전체 문제 수보다 적게 뽑아야 무한루프 안 돔
                 const pickCount = Math.min(5, totalCount); 
                 
                 while(randomIds.size < pickCount) {
@@ -233,3 +342,5 @@
         };
         window.onload = function() { app.init(); };
     </script>
+</body>
+</html>
