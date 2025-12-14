@@ -82,11 +82,8 @@
                             <option value="all">전체 (최근 50개)</option>
                         </select>
                         <button onclick="app.analyzeClassStats()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm font-bold shadow"><i class="fas fa-chart-bar mr-1"></i> 통계 분석</button>
-                        
                         <select id="sort-logs" onchange="app.renderLogs()" class="p-2 border rounded text-sm"><option value="time">최신순</option><option value="number">번호순</option><option value="score_desc">점수 높은순</option></select>
-                        
                         <button onclick="app.loadByClass(document.getElementById('select-class-trigger').value)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-sync-alt"></i></button>
-                        
                         <button onclick="app.deleteSelectedLogs()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-trash"></i></button>
                         <button onclick="app.downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-file-excel"></i> 엑셀</button>
                     </div>
@@ -101,14 +98,16 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-4 bg-stone-50 p-3 rounded border border-stone-200 gap-3">
                     <h3 class="font-bold text-lg">전체 문제 <span id="total-q-count" class="text-sm text-stone-500"></span></h3>
                     <div class="flex gap-2 flex-wrap">
+                        <span class="text-xs text-gray-500 flex items-center bg-white px-2 rounded border">💡 전체 통계는 [갱신] 버튼을 누를 때만 업데이트됩니다.</span>
+                        <button onclick="app.calculateGlobalStats()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-xs font-bold shadow-md flex items-center"><i class="fas fa-sync mr-1"></i> 전체 통계 갱신 (서버 저장)</button>
+                        
                         <select id="bank-sort" onchange="app.renderBank()" class="p-2 border rounded text-xs"><option value="id">번호순</option><option value="unit">단원순</option><option value="type">유형순</option><option value="rate_asc">취약 유형순</option></select>
                         <select id="bank-filter-unit" onchange="app.renderBank()" class="p-2 border rounded text-xs w-32"><option value="all">모든 단원</option><option value="I.">I. 고대</option><option value="II.">II. 종교/문화</option><option value="III.">III. 지역교류</option><option value="IV.">IV. 제국주의</option><option value="V.">V. 세계대전</option></select>
                         <button onclick="app.deleteSelectedQuestions()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-xs font-bold"><i class="fas fa-trash"></i> 삭제</button>
-                        <button onclick="app.resetServerQuestions()" class="bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-200">초기화</button>
                     </div>
                 </div>
                 <div class="overflow-auto max-h-[500px] border rounded bg-stone-50">
-                    <table class="w-full text-sm text-left admin-table"><thead class="bg-stone-200 text-stone-700 sticky top-0 font-bold"><tr><th class="p-3 w-10 text-center"><input type="checkbox" onchange="document.querySelectorAll('.q-checkbox').forEach(cb=>cb.checked=this.checked)"></th><th class="p-3 w-16 text-center">ID</th><th class="p-3 w-32">단원</th><th class="p-3 w-20 text-center">유형</th><th class="p-3">문제</th><th class="p-3 w-20 text-center">보기</th><th class="p-3 w-32 col-answer text-center">정답</th><th class="p-3 w-24 text-center">정답률</th></tr></thead><tbody id="bank-body" class="bg-white"></tbody></table>
+                    <table class="w-full text-sm text-left admin-table"><thead class="bg-stone-200 text-stone-700 sticky top-0 font-bold"><tr><th class="p-3 w-10 text-center"><input type="checkbox" onchange="document.querySelectorAll('.q-checkbox').forEach(cb=>cb.checked=this.checked)"></th><th class="p-3 w-16 text-center">ID</th><th class="p-3 w-32">단원</th><th class="p-3 w-20 text-center">유형</th><th class="p-3">문제</th><th class="p-3 w-20 text-center">보기</th><th class="p-3 w-32 col-answer text-center">정답</th><th class="p-3 w-24 text-center">정답률 (전체)</th></tr></thead><tbody id="bank-body" class="bg-white"></tbody></table>
                 </div>
             </div>
 
@@ -141,7 +140,6 @@
     <div id="student-detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('student-detail-modal').style.display='none'"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">상세 정보</h3><div id="student-detail-content"></div><div class="mt-4 text-center"><button onclick="document.getElementById('student-detail-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
     <div id="preview-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('preview-modal').style.display='none'"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"><div id="preview-content"></div><div class="mt-6 text-center"><button onclick="document.getElementById('preview-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
     <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="app.closeEditModal()"></div><div class="bg-white p-6 rounded-lg shadow-xl z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">문제 수정</h3><input type="hidden" id="edit-q-id"><div class="space-y-4"><div><label class="block text-sm font-bold mb-1">단원</label><select id="edit-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div><div><label class="block text-sm font-bold mb-1">유형</label><select id="edit-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('edit')"><option value="choice">객관식</option><option value="word">단답형</option><option value="order">순서 맞추기</option><option value="ox">O/X 퀴즈</option></select></div><div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="edit-q-image-input" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'edit')"><img id="edit-q-image-preview" class="hidden q-image-thumb mt-2"><input type="hidden" id="edit-q-image-base64"><button onclick="document.getElementById('edit-q-image-preview').style.display='none';document.getElementById('edit-q-image-base64').value='';" class="text-red-500 text-xs">이미지 삭제</button></div><div><label class="block text-sm font-bold mb-1">문제</label><textarea id="edit-q-text" class="w-full p-2 border rounded h-20"></textarea></div><div id="option-container-edit"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="edit-q-options" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="edit-q-answer" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="edit-q-exp" class="w-full p-2 border rounded"></div><div class="flex gap-2 pt-2"><button onclick="app.saveEditedQuestion()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded">저장</button><button onclick="app.closeEditModal()" class="flex-1 bg-stone-200 text-stone-700 font-bold py-3 rounded">취소</button></div></div></div></div>
-    
     <div id="stats-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="document.getElementById('stats-modal').style.display='none'"></div><div class="bg-white p-8 rounded-lg shadow-2xl z-10 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">통계 분석 (학생별 정답률)</h3><div id="stats-content"></div><div class="mt-4 text-center"><button onclick="document.getElementById('stats-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded">닫기</button></div></div></div>
 
     <script>
@@ -201,8 +199,6 @@
                 if(!db || !cls) return;
                 this.showLoading(true);
                 let query = db.collection("quiz_results");
-                
-                // [업데이트] 반을 선택하면 limit 없이 해당 반 전체 데이터를 가져오도록 수정
                 if (cls === 'all') { query = query.orderBy("timestamp", "desc").limit(50); } 
                 else { query = query.where("class", "==", cls).orderBy("timestamp", "desc"); } 
 
@@ -218,7 +214,6 @@
                     else alert("로드 실패: " + e.message);
                 });
             },
-            // [업데이트] 학생 이름 검색 기능 추가
             searchStudent: function() {
                 const name = document.getElementById('search-student-name').value.trim();
                 if(!name) { alert("이름을 입력하세요"); return; }
@@ -228,7 +223,6 @@
                     snapshot.forEach(doc => { let d = doc.data(); d.docId = doc.id; logs.push(d); });
                     if(logs.length === 0) { alert("검색 결과가 없습니다."); this.showLoading(false); return; }
                     
-                    // 개인별 평균 점수 계산
                     let totalScore = logs.reduce((sum, l) => sum + l.score, 0);
                     let avg = Math.round(totalScore / logs.length);
                     let html = `<div class="bg-blue-50 p-4 rounded mb-4 border border-blue-200">
@@ -253,7 +247,6 @@
                     else alert("검색 실패: " + e.message);
                 });
             },
-            // [업데이트] 반별 통계 분석 기능 추가
             analyzeClassStats: function() {
                 if(!this.state.logs || this.state.logs.length === 0) { alert("먼저 반을 선택하여 데이터를 불러오세요."); return; }
                 const studentMap = {};
@@ -304,23 +297,89 @@
                     if(document.getElementById('tab-bank').style.display !== 'none') this.renderBank();
                 }).catch((e) => { console.error("문제 로드 에러:", e); });
             },
-            calculateStats: function() {
-                const stats = {};
-                this.state.logs.forEach(log => { if (log.details) log.details.forEach(item => { if (!stats[item.id]) stats[item.id] = { total: 0, correct: 0 }; stats[item.id].total++; if (item.correct) stats[item.id].correct++; }); });
-                this.state.questionStats = stats;
+            // [업데이트] 전체 학생의 답안을 전수 조사하여 문제별 통계를 계산하고 DB에 저장하는 함수
+            calculateGlobalStats: function() {
+                if(!confirm("⚠️ 경고: 이 작업은 모든 학생 데이터를 다운로드합니다.\n데이터 양에 따라 시간이 걸리거나 비용이 발생할 수 있습니다.\n진행하시겠습니까?")) return;
+                
+                this.showLoading(true);
+                // 1. 모든 결과 가져오기 (limit 없음)
+                db.collection("quiz_results").get().then(snapshot => {
+                    const stats = {}; // { questionId: { total: 0, correct: 0 } }
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.details) {
+                            data.details.forEach(item => {
+                                if (!stats[item.id]) stats[item.id] = { total: 0, correct: 0 };
+                                stats[item.id].total++;
+                                if (item.correct) stats[item.id].correct++;
+                            });
+                        }
+                    });
+
+                    // 2. 각 문제 문서(quiz_questions)에 통계 정보 업데이트 (Batch 처리)
+                    const batch = db.batch();
+                    Object.keys(stats).forEach(qId => {
+                        const ref = db.collection("quiz_questions").doc(qId);
+                        batch.update(ref, {
+                            stat_total: stats[qId].total,
+                            stat_correct: stats[qId].correct
+                        });
+                    });
+
+                    return batch.commit();
+                }).then(() => {
+                    alert("✅ 전체 통계가 갱신되었습니다.");
+                    this.loadQuestionsFromFirebase(); // 갱신된 정보로 다시 로드
+                    this.showLoading(false);
+                }).catch(e => {
+                    this.showLoading(false);
+                    alert("통계 갱신 실패: " + e.message);
+                });
             },
+            // [업데이트] renderBank 함수: 저장된 통계(stat_total)가 있으면 그걸 우선 사용
             renderBank: function() {
-                this.calculateStats();
+                // 더 이상 로컬 logs로 계산하지 않고, 문제 객체에 저장된 stat_ 정보를 사용
                 let filtered = [...this.state.allQuestions];
-                const unitFilter = document.getElementById('bank-filter-unit').value; if (unitFilter !== 'all') filtered = filtered.filter(q => (q.unit || "").indexOf(unitFilter) !== -1);
+                const unitFilter = document.getElementById('bank-filter-unit').value; 
+                if (unitFilter !== 'all') filtered = filtered.filter(q => (q.unit || "").indexOf(unitFilter) !== -1);
+                
                 const sortType = document.getElementById('bank-sort').value;
                 if (sortType === 'id') filtered.sort((a, b) => a.id - b.id);
-                else if (sortType.startsWith('rate')) filtered.sort((a, b) => { const sA = this.state.questionStats[a.id]||{t:0,c:0}, sB = this.state.questionStats[b.id]||{t:0,c:0}; return (sA.total>0?sA.correct/sA.total:0) - (sB.total>0?sB.correct/sB.total:0); });
+                else if (sortType.startsWith('rate')) {
+                    filtered.sort((a, b) => { 
+                        // 저장된 통계가 없으면 0으로 처리
+                        const rA = (a.stat_total > 0) ? a.stat_correct / a.stat_total : 0;
+                        const rB = (b.stat_total > 0) ? b.stat_correct / b.stat_total : 0;
+                        return (sortType === 'rate_asc') ? rA - rB : rB - rA; 
+                    }); 
+                }
+
                 document.getElementById('total-q-count').innerText = `(${filtered.length}문항)`;
                 document.getElementById('bank-body').innerHTML = filtered.map(q => {
-                    const stat = this.state.questionStats[q.id] || { total: 0, correct: 0 };
-                    const rate = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
-                    return `<tr class="border-b hover:bg-stone-50"><td class="p-3 text-center"><input type="checkbox" class="q-checkbox" value="${q.id}"></td><td class="p-3 text-xs text-center">${q.id}</td><td class="p-3 text-xs text-gray-500">${q.unit || '기타'}</td><td class="p-3 text-center text-xs">${q.type}</td><td class="p-3 text-sm cursor-pointer text-blue-600" onclick="app.editQuestion(${q.id})">${q.question}</td><td class="p-3 text-center"><button onclick="app.previewQuestion(${q.id})"><i class="fas fa-eye"></i></button></td><td class="p-3 text-xs font-bold text-center col-answer">${q.answer}</td><td class="p-3 text-center w-24 text-xs font-bold">${rate}%<div class="rate-bar-bg"><div class="rate-bar-fill ${rate<60?'bg-red-500':'bg-green-500'}" style="width:${rate}%"></div></div></td></tr>`;
+                    // 저장된 통계 사용
+                    const total = q.stat_total || 0;
+                    const correct = q.stat_correct || 0;
+                    const rate = total > 0 ? Math.round((correct / total) * 100) : 0;
+                    
+                    // 정답률 색상
+                    let barColor = 'bg-green-500';
+                    if(rate < 40) barColor = 'bg-red-500';
+                    else if(rate < 70) barColor = 'bg-yellow-500';
+
+                    return `<tr class="border-b hover:bg-stone-50">
+                        <td class="p-3 text-center"><input type="checkbox" class="q-checkbox" value="${q.id}"></td>
+                        <td class="p-3 text-xs text-center">${q.id}</td>
+                        <td class="p-3 text-xs text-gray-500">${q.unit || '기타'}</td>
+                        <td class="p-3 text-center text-xs">${q.type}</td>
+                        <td class="p-3 text-sm cursor-pointer text-blue-600" onclick="app.editQuestion(${q.id})">${q.question}</td>
+                        <td class="p-3 text-center"><button onclick="app.previewQuestion(${q.id})"><i class="fas fa-eye"></i></button></td>
+                        <td class="p-3 text-xs font-bold text-center col-answer">${q.answer}</td>
+                        <td class="p-3 text-center w-24 text-xs font-bold">
+                            ${rate}% <span class="text-[10px] font-normal text-gray-400">(${total}명)</span>
+                            <div class="rate-bar-bg"><div class="rate-bar-fill ${barColor}" style="width:${rate}%"></div></div>
+                        </td>
+                    </tr>`;
                 }).join('');
             },
             deleteSelectedLogs: function() { const checked = Array.from(document.querySelectorAll('.log-checkbox:checked')).map(cb => cb.value); if(checked.length && confirm("삭제?")) { const batch = db.batch(); checked.forEach(id => batch.delete(db.collection("quiz_results").doc(id))); batch.commit().then(() => { 
