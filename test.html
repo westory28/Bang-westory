@@ -44,7 +44,7 @@
     <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold text-stone-700">로딩 중...</p></div>
     <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
 
-    <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40 cursor-pointer" onclick="location.reload()">
+    <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40 cursor-pointer" onclick="app.goHome()">
         <div class="container mx-auto px-4"><h1 class="text-lg md:text-xl font-bold tracking-tight truncate"><span class="mr-2">🧑‍🏫</span> 용신중학교 역사교사 방재석</h1></div>
     </header>
 
@@ -61,7 +61,7 @@
                     <select id="input-class" class="w-2/4 p-3 border border-stone-300 rounded"><option value="">반</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
                     <input type="number" id="input-number" placeholder="번호" class="w-1/4 p-3 border border-stone-300 rounded text-center">
                 </div>
-                <input type="text" id="input-name" placeholder="이름 (한글)" class="w-full p-3 border border-stone-300 rounded" oninput="this.value = this.value.replace(/[a-zA-Z]/g, '')">
+                <input type="text" id="input-name" placeholder="이름 (한글만 입력)" class="w-full p-3 border border-stone-300 rounded" oninput="this.value = this.value.replace(/[a-zA-Z]/g, '')">
                 <button onclick="app.startQuiz()" class="w-full bg-stone-900 text-white font-bold py-4 rounded-lg hover:bg-stone-700 transition shadow-lg mt-4">도전 시작 <i class="fas fa-play ml-2"></i></button>
             </div>
         </section>
@@ -113,20 +113,38 @@
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
             db = firebase.firestore(); 
         } catch(e) { 
-            console.error("Firebase 초기화 오류:", e);
-            alert("시스템 오류: 관리자에게 문의하세요. (Firebase Init Fail)"); 
+            console.error("Firebase Init Error", e);
         }
 
         const app = {
             state: { student:{}, questions:[], allQuestions:[], currentIndex:0, answers:{}, score:0, timer:null, timeLeft:60, isTimeOut:false, isQuizActive: false },
             
-            init: function() { },
+            init: function() { 
+                // 새로고침 방지를 위한 이벤트
+                window.addEventListener('beforeunload', (e) => {
+                    if (this.state.isQuizActive) {
+                        e.preventDefault();
+                        e.returnValue = ''; 
+                    }
+                });
+            },
 
             showLoading: function(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; },
 
-            // [핵심] 고유 키 생성 함수 (공백 제거하여 정확도 향상)
+            // 홈 버튼 클릭 시 (안전장치)
+            goHome: function() {
+                if (this.state.isQuizActive) {
+                    // 퀴즈 중이라면 경고
+                    if (confirm("📢 경고: 지금 나가면 '10분간 재응시'가 불가능합니다.\n(이미 시작 시간이 기록되었습니다)\n\n그래도 나가시겠습니까?")) {
+                        location.reload(); 
+                    }
+                } else {
+                    location.reload();
+                }
+            },
+
             getStorageKey: function(cls, num, name) {
-                return `history_quiz_submit_time_v2_${cls.trim()}_${num.trim()}_${name.trim()}`;
+                return `history_quiz_block_v5_${cls.trim()}_${num.trim()}_${name.trim()}`;
             },
 
             startQuiz: async function() {
@@ -136,33 +154,33 @@
 
                 if(!cls || !num || !name) { alert("학년, 반, 번호, 이름을 모두 입력하세요."); return; }
                 
-                // [이름 검증] 한 번 더 체크
+                // [이름 검증] 영어 포함 시 차단
                 if(/[a-zA-Z]/.test(name)) {
                     alert("이름에 영어를 사용할 수 없습니다.");
-                    document.getElementById('input-name').value = ""; // 입력 초기화
+                    document.getElementById('input-name').value = "";
                     return;
                 }
                 
-                // [10분 제한 체크] 파이어베이스가 아닌 로컬스토리지 사용
+                // [1. 11분 차단 검사]
                 const storageKey = this.getStorageKey(cls, num, name);
-                const lastSubmitTime = localStorage.getItem(storageKey);
+                const blockedUntil = localStorage.getItem(storageKey);
 
-                if (lastSubmitTime) {
+                if (blockedUntil) {
                     const now = new Date().getTime();
-                    const diffMins = (now - parseInt(lastSubmitTime)) / (1000 * 60);
-
-                    // 10분 미만이면 차단
-                    if (diffMins < 10) {
-                        const waitTime = Math.ceil(10 - diffMins);
-                        alert(`⛔ 재응시 불가!\n\n부정행위 방지를 위해 10분 내 재응시가 제한됩니다.\n(새로고침을 해도 기록이 남습니다)\n\n약 ${waitTime}분 뒤에 다시 시도해주세요.`);
-                        return; // 여기서 함수 강제 종료 (문제 로드 안 함)
+                    // 현재 시간이 차단 풀리는 시간보다 전이라면
+                    if (now < parseInt(blockedUntil)) {
+                        const leftMs = parseInt(blockedUntil) - now;
+                        const leftMins = Math.ceil(leftMs / (1000 * 60));
+                        
+                        this.showLoading(false);
+                        alert(`⛔ 재응시 불가!\n\n이미 시험을 시작했거나 제출했습니다.\n\n${leftMins}분 뒤에 다시 시도할 수 있습니다.`);
+                        return; // 진입 차단
                     }
                 }
 
                 this.showLoading(true);
 
                 try {
-                    // [문제 로드]
                     await this.loadRandomQuestions();
 
                     if(!this.state.allQuestions || this.state.allQuestions.length === 0) {
@@ -172,16 +190,19 @@
                 } catch(e) {
                     console.error("Error Detail:", e);
                     this.showLoading(false);
-                    if (e.code === 'permission-denied') {
-                        alert("오류: 데이터베이스 접근 권한이 없습니다.");
-                    } else {
-                        alert("문제를 불러오는 중 오류가 발생했습니다.\n" + e.message);
-                    }
+                    if (e.code === 'permission-denied') alert("오류: 데이터베이스 접근 권한이 없습니다.");
+                    else alert("오류: " + e.message);
                     return;
                 }
 
-                // 퀴즈 시작 세팅
-                this.state.student = { class:cls, number:num, name:name };
+                // [2. 시작 즉시 11분 차단 설정]
+                // 1분(문제풀이) + 10분(휴식) = 총 11분간 못 들어오게 막음
+                // 이제 새로고침하거나 도망가도 이 기록 때문에 못 들어옴
+                const blockTime = new Date().getTime() + (11 * 60 * 1000); 
+                localStorage.setItem(storageKey, blockTime);
+
+                // 퀴즈 시작
+                this.state.student = { class:cls, number:num, name:name, storageKey: storageKey };
                 this.state.questions = this.state.allQuestions; 
                 this.state.currentIndex = 0; 
                 this.state.answers = {}; 
@@ -198,19 +219,14 @@
 
             loadRandomQuestions: async function() {
                 if(!db) return;
-                
                 let totalCount = 132; 
-
                 try {
                     const metaDoc = await db.collection("metadata").doc("count_info").get();
-                    if (metaDoc.exists) {
-                        totalCount = metaDoc.data().total_questions || 132;
-                    }
+                    if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 132;
                 } catch(e) {}
                 
                 const randomIds = new Set();
                 const pickCount = Math.min(5, totalCount); 
-                
                 while(randomIds.size < pickCount) {
                     const rand = Math.floor(Math.random() * totalCount) + 1;
                     randomIds.add(rand.toString());
@@ -227,7 +243,6 @@
                     data.id = parseInt(doc.id); 
                     loadedData.push(data); 
                 });
-
                 this.state.allQuestions = this.shuffleArray(loadedData);
             },
 
@@ -254,7 +269,6 @@
                 document.getElementById('student-question-unit').innerText = q.unit || "기타";
                 const img = document.getElementById('question-image'); 
                 if(q.image) { img.src=q.image; img.parentNode.classList.remove('hidden'); } else img.parentNode.classList.add('hidden');
-                
                 document.getElementById('question-text').innerHTML = this.linkify(q.question);
                 
                 const area = document.getElementById('answer-area'); area.innerHTML = ''; 
@@ -311,10 +325,9 @@
                 });
                 this.state.score = correct * 20; this.state.incorrectDetails = details;
                 
-                // [핵심] 종료 시점에 '확실하게' 로컬 스토리지에 시간 저장
-                const s = this.state.student;
-                const storageKey = this.getStorageKey(s.class, s.number, s.name);
-                localStorage.setItem(storageKey, new Date().getTime());
+                // 제출 완료해도 시간은 갱신하지 않음 (시작할 때 이미 11분 잡아놨으므로)
+                // 만약 시작 시간 기준 11분이 너무 길다면 여기서 '현재시간 + 10분'으로 업데이트 해도 됨
+                // 여기선 강력한 차단을 위해 시작 기준 11분을 유지합니다.
 
                 this.showView('view-results'); this.renderResults(); this.saveToFirebase(detailLogs);
             },
