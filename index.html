@@ -80,7 +80,9 @@
                 <div class="flex gap-2">
                     <div class="w-1/4 bg-stone-100 border border-stone-300 rounded flex items-center justify-center font-bold text-stone-600">2학년</div>
                     <select id="input-class" class="w-2/4 p-3 border border-stone-300 rounded"><option value="">반</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
-                    <input type="number" id="input-number" placeholder="번호" class="w-1/4 p-3 border border-stone-300 rounded text-center">
+                    <select id="input-number" class="w-1/4 p-3 border border-stone-300 rounded text-center">
+                        <option value="">번호</option>
+                    </select>
                 </div>
                 <input type="text" id="input-name" placeholder="이름 (한글만 입력)" class="w-full p-3 border border-stone-300 rounded" oninput="this.value = this.value.replace(/[a-zA-Z]/g, '')">
                 <button onclick="app.startQuiz()" class="w-full bg-stone-900 text-white font-bold py-4 rounded-lg hover:bg-stone-700 transition shadow-lg mt-4">도전 시작 <i class="fas fa-play ml-2"></i></button>
@@ -142,33 +144,35 @@
                 window.addEventListener('beforeunload', (e) => {
                     if (this.state.isQuizActive) { e.preventDefault(); e.returnValue = ''; }
                 });
+                
+                // [추가] 번호 선택지(1~35) 자동 생성
+                const numSelect = document.getElementById('input-number');
+                for(let i=1; i<=35; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.innerText = i;
+                    numSelect.appendChild(opt);
+                }
 
-                // [중요] 카운터: 세션(창을 닫기 전)에 방문 기록이 없으면 +1, 있으면 그냥 조회만
                 this.updateVisitCount();
             },
 
-            // [수정된 카운터 로직] 새로고침 방지 (세션 스토리지 활용)
             updateVisitCount: function() {
                 const badgeText = document.getElementById("live-count-text");
-                const sessionKey = 'quiz_visited_session'; // 이번 창에서 방문했는지 체크하는 키
+                const sessionKey = 'quiz_visited_session'; 
 
-                // 1. 세션에 기록이 없으면? -> 처음 온 것 -> 카운트 증가(/up) 요청
                 if (!sessionStorage.getItem(sessionKey)) {
                     fetch('https://api.counterapi.dev/v1/westory28-history-quiz/visits/up')
                         .then(res => res.json())
                         .then(data => {
                             badgeText.innerText = `총 도전: ${data.count}명`;
-                            sessionStorage.setItem(sessionKey, 'true'); // 방문했다고 도장 쾅!
+                            sessionStorage.setItem(sessionKey, 'true');
                         })
                         .catch(err => { badgeText.innerText = "총 도전: -명"; });
-                } 
-                // 2. 세션에 기록이 있으면? -> 새로고침 한 것 -> 그냥 조회(/)만 요청
-                else {
+                } else {
                     fetch('https://api.counterapi.dev/v1/westory28-history-quiz/visits/')
                         .then(res => res.json())
-                        .then(data => {
-                            badgeText.innerText = `총 도전: ${data.count}명`;
-                        })
+                        .then(data => { badgeText.innerText = `총 도전: ${data.count}명`; })
                         .catch(err => { badgeText.innerText = "총 도전: -명"; });
                 }
             },
@@ -191,7 +195,15 @@
                 const name = document.getElementById('input-name').value.trim();
 
                 if(!cls || !num || !name) { alert("학년, 반, 번호, 이름을 모두 입력하세요."); return; }
-                if(/[a-zA-Z]/.test(name)) { alert("이름에 영어를 사용할 수 없습니다."); document.getElementById('input-name').value = ""; return; }
+                
+                // [이름 검증]
+                const nameRegex = /^[가-힣]{2,4}$/;
+                if (!nameRegex.test(name)) {
+                    alert("이름은 2~4글자의 한글로만 입력해주세요.\n(자음, 모음, 특수문자, 숫자, 공백 불가)");
+                    document.getElementById('input-name').value = ""; 
+                    document.getElementById('input-name').focus();
+                    return;
+                }
                 
                 const storageKey = this.getStorageKey(cls, num, name);
                 const blockedUntil = localStorage.getItem(storageKey);
@@ -237,10 +249,10 @@
             loadRandomQuestions: async function() {
                 if(!db) return;
                 
-                let totalCount = 200; 
+                let totalCount = 189; 
                 try {
                     const metaDoc = await db.collection("metadata").doc("count_info").get();
-                    if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 200;
+                    if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 189;
                 } catch(e) {}
                 
                 const randomIds = new Set();
