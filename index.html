@@ -38,6 +38,22 @@
         .q-image-thumb { max-width: 100%; max-height: 250px; border-radius: 8px; margin: 10px auto; border: 1px solid #e5e7eb; display: block; object-fit: contain; cursor: zoom-in; transition: transform 0.2s; }
         #image-zoom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; cursor: zoom-out; }
         #image-zoom-content { max-width: 95%; max-height: 95%; border-radius: 4px; }
+        
+        /* 실시간 카운터 배지 */
+        .live-badge { 
+            background: rgba(255, 255, 255, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px;
+            animation: pulse-border 2s infinite;
+        }
+        .live-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
+        @keyframes pulse-border { 0% { border-color: rgba(255,255,255,0.4); } 50% { border-color: #fbbf24; } 100% { border-color: rgba(255,255,255,0.4); } }
     </style>
 </head>
 <body class="text-stone-800 min-h-screen flex flex-col">
@@ -45,7 +61,13 @@
     <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
 
     <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40 cursor-pointer" onclick="app.goHome()">
-        <div class="container mx-auto px-4"><h1 class="text-lg md:text-xl font-bold tracking-tight truncate"><span class="mr-2">🧑‍🏫</span> 용신중학교 역사교사 방재석</h1></div>
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold tracking-tight truncate flex-1"><span class="mr-2">🧑‍🏫</span> 용신중학교 역사교사 방재석</h1>
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                <span id="live-count-text">접속: ...</span>
+            </div>
+        </div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-6">
@@ -121,6 +143,33 @@
                 window.addEventListener('beforeunload', (e) => {
                     if (this.state.isQuizActive) { e.preventDefault(); e.returnValue = ''; }
                 });
+
+                // [중요] 페이지 로드 시 '외부 카운터 API'를 호출하여 접속자 수 증가 (무료, 파이어베이스 무관)
+                this.updateVisitCount();
+            },
+
+            // [추가] 외부 무료 카운터 API 사용 (CounterAPI)
+            updateVisitCount: function() {
+                const badgeText = document.getElementById("live-count-text");
+                // Namespace: westory28-history-quiz, Key: visits
+                // 이 URL은 호출할 때마다 카운트를 1씩 증가시키고 현재 값을 반환합니다.
+                fetch('https://api.counterapi.dev/v1/westory28-history-quiz/visits/up')
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data && data.count) {
+                            badgeText.innerText = `접속: ${data.count}명`;
+                            // 깜빡임 효과
+                            const badge = document.querySelector('.live-badge');
+                            if(badge) {
+                                badge.style.backgroundColor = 'rgba(251, 191, 36, 0.4)';
+                                setTimeout(() => badge.style.backgroundColor = 'rgba(255, 255, 255, 0.2)', 300);
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.log("Counter API Error:", err);
+                        badgeText.innerText = "접속: -명";
+                    });
             },
 
             showLoading: function(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; },
@@ -184,12 +233,10 @@
                 this.startTimer();
             },
 
-            // [수정된 함수] 최신 문제(번호가 큰 것)를 우선적으로 뽑는 로직
             loadRandomQuestions: async function() {
                 if(!db) return;
                 
-                // 1. 전체 문제 수 확인
-                let totalCount = 189; // 기본값 189
+                let totalCount = 189; 
                 try {
                     const metaDoc = await db.collection("metadata").doc("count_info").get();
                     if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 189;
@@ -198,25 +245,20 @@
                 const randomIds = new Set();
                 const pickCount = Math.min(5, totalCount); 
                 
-                // [알고리즘 수정] 최신 문제 우선 확보 (3개)
-                // 예: 전체 189개라면, 최근 50개(140~189) 중에서 3개를 먼저 뽑음
+                // 최신 문제 우선 배정 (3개)
                 if (totalCount >= 5) {
-                    const recentRange = 50; // 최근 50개 중 선택
+                    const recentRange = 50; 
                     const startOfRecent = Math.max(1, totalCount - recentRange + 1);
-                    
-                    // 최근 문제에서 3개 뽑기
                     while(randomIds.size < 3) {
                         const rand = Math.floor(Math.random() * (totalCount - startOfRecent + 1)) + startOfRecent;
                         randomIds.add(rand.toString());
                     }
                 }
 
-                // 나머지(2개)는 전체 범위(1 ~ totalCount)에서 랜덤으로 채움
                 while(randomIds.size < pickCount) {
                     const rand = Math.floor(Math.random() * totalCount) + 1;
                     randomIds.add(rand.toString());
                 }
-                
                 const targetIds = Array.from(randomIds);
 
                 const qSnapshot = await db.collection("quiz_questions")
@@ -229,8 +271,6 @@
                     data.id = parseInt(doc.id); 
                     loadedData.push(data); 
                 });
-                
-                // 다시 섞어서 순서 랜덤화
                 this.state.allQuestions = this.shuffleArray(loadedData);
             },
 
