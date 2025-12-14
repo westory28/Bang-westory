@@ -216,10 +216,10 @@
 
             loadRandomQuestions: async function() {
                 if(!db) return;
-                let totalCount = 132; 
+                let totalCount = 189; 
                 try {
                     const metaDoc = await db.collection("metadata").doc("count_info").get();
-                    if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 132;
+                    if (metaDoc.exists) totalCount = metaDoc.data().total_questions || 189;
                 } catch(e) {}
                 
                 const randomIds = new Set();
