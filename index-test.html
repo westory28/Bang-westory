@@ -87,7 +87,13 @@
         <section id="view-ready" class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg fade-in mt-8 border-t-4 border-green-500 text-center">
             <h2 class="text-2xl font-bold text-stone-900 mb-2">환영합니다!</h2>
             <p class="text-xl font-bold text-amber-600 mb-6"><span id="user-info-display"></span> 학생</p>
+            
             <p class="text-stone-500 text-sm mb-6 bg-stone-50 p-3 rounded">⚠️ <strong>주의사항</strong><br>시작 버튼을 누르면 <strong>11분간 재응시가 불가능</strong>합니다.<br>준비되면 시작하세요.</p>
+            
+            <button onclick="location.href='student.html'" class="w-full bg-white border border-stone-300 text-stone-700 font-bold py-3 rounded-lg hover:bg-stone-50 transition shadow-sm mb-3">
+                📊 내 기록 보기
+            </button>
+
             <button onclick="app.startQuiz()" class="w-full bg-green-600 text-white font-bold py-4 rounded-lg hover:bg-green-700 transition shadow-lg text-lg">도전 시작 <i class="fas fa-play ml-2"></i></button>
             <button onclick="firebase.auth().signOut(); location.reload();" class="mt-4 text-stone-400 text-xs underline">로그아웃</button>
         </section>
