@@ -82,7 +82,11 @@
                             <option value="all">전체 (최근 50개)</option>
                         </select>
                         <button onclick="app.analyzeClassStats()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm font-bold shadow"><i class="fas fa-chart-bar mr-1"></i> 통계 분석</button>
+                        
                         <select id="sort-logs" onchange="app.renderLogs()" class="p-2 border rounded text-sm"><option value="time">최신순</option><option value="number">번호순</option><option value="score_desc">점수 높은순</option></select>
+                        
+                        <button onclick="app.loadByClass(document.getElementById('select-class-trigger').value)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-sync-alt"></i></button>
+                        
                         <button onclick="app.deleteSelectedLogs()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-trash"></i></button>
                         <button onclick="app.downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-bold"><i class="fas fa-file-excel"></i> 엑셀</button>
                     </div>
@@ -197,6 +201,8 @@
                 if(!db || !cls) return;
                 this.showLoading(true);
                 let query = db.collection("quiz_results");
+                
+                // [업데이트] 반을 선택하면 limit 없이 해당 반 전체 데이터를 가져오도록 수정
                 if (cls === 'all') { query = query.orderBy("timestamp", "desc").limit(50); } 
                 else { query = query.where("class", "==", cls).orderBy("timestamp", "desc"); } 
 
@@ -212,6 +218,7 @@
                     else alert("로드 실패: " + e.message);
                 });
             },
+            // [업데이트] 학생 이름 검색 기능 추가
             searchStudent: function() {
                 const name = document.getElementById('search-student-name').value.trim();
                 if(!name) { alert("이름을 입력하세요"); return; }
@@ -221,6 +228,7 @@
                     snapshot.forEach(doc => { let d = doc.data(); d.docId = doc.id; logs.push(d); });
                     if(logs.length === 0) { alert("검색 결과가 없습니다."); this.showLoading(false); return; }
                     
+                    // 개인별 평균 점수 계산
                     let totalScore = logs.reduce((sum, l) => sum + l.score, 0);
                     let avg = Math.round(totalScore / logs.length);
                     let html = `<div class="bg-blue-50 p-4 rounded mb-4 border border-blue-200">
@@ -245,6 +253,7 @@
                     else alert("검색 실패: " + e.message);
                 });
             },
+            // [업데이트] 반별 통계 분석 기능 추가
             analyzeClassStats: function() {
                 if(!this.state.logs || this.state.logs.length === 0) { alert("먼저 반을 선택하여 데이터를 불러오세요."); return; }
                 const studentMap = {};
@@ -288,25 +297,13 @@
                 document.getElementById('pagination-controls').innerHTML = pHtml;
             },
             changeLogPage: function(p) { this.state.logPage = p; this.renderLogs(); },
-            
-            // [핵심] 문제 로드 함수 (sync=true면 서버의 메타데이터도 갱신)
-            loadQuestionsFromFirebase: function(sync = false) {
+            loadQuestionsFromFirebase: function() {
                 db.collection("quiz_questions").get().then((querySnapshot) => {
                     const loadedData = []; querySnapshot.forEach((doc) => { let data = doc.data(); data.id = parseInt(doc.id); loadedData.push(data); });
                     loadedData.sort((a, b) => a.id - b.id); this.state.allQuestions = loadedData; 
                     if(document.getElementById('tab-bank').style.display !== 'none') this.renderBank();
-                    
-                    // 만약 문제 추가/삭제로 인해 호출된 것이라면, 서버의 '총 문제 수'도 업데이트
-                    if(sync) { this.updateServerCount(loadedData.length); }
                 }).catch((e) => { console.error("문제 로드 에러:", e); });
             },
-            // [추가] 서버에 총 문제 개수 저장하는 함수
-            updateServerCount: function(count) {
-                db.collection("metadata").doc("count_info").set({ total_questions: count })
-                .then(() => console.log(`서버 문제 수 업데이트 완료: ${count}개`))
-                .catch(e => console.error("메타데이터 업데이트 실패", e));
-            },
-            
             calculateStats: function() {
                 const stats = {};
                 this.state.logs.forEach(log => { if (log.details) log.details.forEach(item => { if (!stats[item.id]) stats[item.id] = { total: 0, correct: 0 }; stats[item.id].total++; if (item.correct) stats[item.id].correct++; }); });
@@ -332,22 +329,18 @@
             deleteLog: function(docId) { if(confirm("삭제?")) { db.collection("quiz_results").doc(docId).delete().then(() => {
                 this.loadByClass(document.getElementById('select-class-trigger').value); 
             }).catch(e=>alert("삭제 실패: "+e.message)); } },
-            // [수정] 삭제 시 서버 카운트 갱신
-            deleteSelectedQuestions: function() { const checked = Array.from(document.querySelectorAll('.q-checkbox:checked')).map(cb => cb.value); if(checked.length && confirm("삭제?")) { const batch = db.batch(); checked.forEach(id => batch.delete(db.collection("quiz_questions").doc(id))); batch.commit().then(() => { this.loadQuestionsFromFirebase(true); }).catch(e=>alert("삭제 실패: "+e.message)); } },
-            // [수정] 초기화 시 서버 카운트 0으로 설정
-            resetServerQuestions: function() { if(confirm("전체 초기화?")) { db.collection("quiz_questions").get().then(s => { const batch = db.batch(); s.docs.forEach(d => batch.delete(d.ref)); return batch.commit(); }).then(() => { this.state.allQuestions=[]; this.renderBank(); this.updateServerCount(0); }).catch(e=>alert("실패: "+e.message)); } },
+            deleteSelectedQuestions: function() { const checked = Array.from(document.querySelectorAll('.q-checkbox:checked')).map(cb => cb.value); if(checked.length && confirm("삭제?")) { const batch = db.batch(); checked.forEach(id => batch.delete(db.collection("quiz_questions").doc(id))); batch.commit().then(() => { this.loadQuestionsFromFirebase(); }).catch(e=>alert("삭제 실패: "+e.message)); } },
+            resetServerQuestions: function() { if(confirm("전체 초기화?")) { db.collection("quiz_questions").get().then(s => { const batch = db.batch(); s.docs.forEach(d => batch.delete(d.ref)); return batch.commit(); }).then(() => { this.state.allQuestions=[]; this.renderBank(); }).catch(e=>alert("실패: "+e.message)); } },
             showStudentDetail: function(docId) { const log = this.state.logs.find(l => l.docId === docId); if(!log) return; let html = `<div class="font-bold mb-2">${log.class}반 ${log.number}번 ${log.name} (${log.score}점)</div>`; log.details.forEach((d,i)=>{ const q=this.state.allQuestions.find(x=>x.id===d.id); html+=`<div class="p-2 border mb-2 ${d.correct?'bg-green-50':'bg-red-50'}"><div class="text-sm font-bold">Q${i+1}. ${q?q.question:'삭제된 문제'}</div><div class="text-xs">답: ${d.u} (정답여부:${d.correct?'O':'X'})</div></div>`; }); document.getElementById('student-detail-content').innerHTML=html; document.getElementById('student-detail-modal').style.display='flex'; },
             previewQuestion: function(id) { const q = this.state.allQuestions.find(x => x.id === id); if(!q) return; let html = `<div class="mb-4 font-bold text-lg">${q.question}</div>`; if(q.image) html+=`<img src="${q.image}" class="q-image-thumb mb-4">`; if(q.type==='choice') q.options.forEach(o=>html+=`<div class="choice-btn p-2 border rounded mb-1">${o}</div>`); else if(q.type==='ox') html+=`<div class="flex gap-2"><button class="ox-btn">O</button><button class="ox-btn">X</button></div>`; else html+=`<input class="border p-2 w-full" placeholder="정답 입력">`; document.getElementById('preview-content').innerHTML=html; document.getElementById('preview-modal').style.display='flex'; },
             editQuestion: function(id) { const q = this.state.allQuestions.find(q => q.id === id); if(!q) return; document.getElementById('edit-q-id').value = q.id; document.getElementById('edit-q-unit').value = q.unit; document.getElementById('edit-q-type').value = q.type; document.getElementById('edit-q-text').value = q.question; document.getElementById('edit-q-answer').value = q.answer; document.getElementById('edit-q-exp').value = q.explanation; document.getElementById('edit-q-options').value = q.options ? q.options.join(', ') : ''; this.toggleOptionInput('edit'); document.getElementById('edit-q-image-base64').value = q.image || ''; const img = document.getElementById('edit-q-image-preview'); if(q.image) { img.src = q.image; img.style.display='block'; } else img.style.display='none'; document.getElementById('edit-modal').style.display='flex'; },
             closeEditModal: function() { document.getElementById('edit-modal').style.display='none'; },
-            saveEditedQuestion: function() { const id = parseInt(document.getElementById('edit-q-id').value); const updatedQ = { id, unit: document.getElementById('edit-q-unit').value, type: document.getElementById('edit-q-type').value, question: document.getElementById('edit-q-text').value, options: document.getElementById('edit-q-options').value.split(',').map(s=>s.trim()), answer: document.getElementById('edit-q-answer').value, explanation: document.getElementById('edit-q-exp').value, image: document.getElementById('edit-q-image-base64').value || null }; db.collection("quiz_questions").doc(String(id)).set(updatedQ).then(() => { alert("수정됨"); this.closeEditModal(); this.loadQuestionsFromFirebase(true); }).catch(e=>alert("실패: "+e.message)); },
+            saveEditedQuestion: function() { const id = parseInt(document.getElementById('edit-q-id').value); const updatedQ = { id, unit: document.getElementById('edit-q-unit').value, type: document.getElementById('edit-q-type').value, question: document.getElementById('edit-q-text').value, options: document.getElementById('edit-q-options').value.split(',').map(s=>s.trim()), answer: document.getElementById('edit-q-answer').value, explanation: document.getElementById('edit-q-exp').value, image: document.getElementById('edit-q-image-base64').value || null }; db.collection("quiz_questions").doc(String(id)).set(updatedQ).then(() => { alert("수정됨"); this.closeEditModal(); this.loadQuestionsFromFirebase(); }).catch(e=>alert("실패: "+e.message)); },
             toggleOptionInput: function(prefix) { const t = document.getElementById(prefix + '-q-type').value; document.getElementById('option-container-' + prefix).style.display = (t==='choice'||t==='order')?'block':'none'; },
             updateNextQuestionNumber: function() { const maxId = this.state.allQuestions.reduce((max, item) => Math.max(max, item.id), 0); document.getElementById('next-q-id-display').innerText = `다음 번호: ${maxId + 1}`; },
             handleImageUpload: function(input, prefix) { if(input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById(prefix + '-q-image-base64').value = e.target.result; document.getElementById(prefix + '-q-image-preview').src = e.target.result; document.getElementById(prefix + '-q-image-preview').style.display='block'; }; reader.readAsDataURL(input.files[0]); } },
-            // [수정] 문제 추가 시 서버 카운트 갱신
-            addCustomQuestion: function() { const newQ = { id: this.state.allQuestions.reduce((m,i)=>Math.max(m,i.id),0)+1, unit: document.getElementById('new-q-unit').value, type: document.getElementById('new-q-type').value, question: document.getElementById('new-q-text').value, options: document.getElementById('new-q-options').value.split(',').map(s=>s.trim()), answer: document.getElementById('new-q-answer').value, explanation: document.getElementById('new-q-exp').value, image: document.getElementById('new-q-image-base64').value || null }; db.collection("quiz_questions").doc(String(newQ.id)).set(newQ).then(() => { alert("추가됨"); this.loadQuestionsFromFirebase(true); }).catch(e=>alert("실패: "+e.message)); },
-            // [수정] 엑셀 업로드 시 서버 카운트 갱신
-            uploadExcel: function() { const f = document.getElementById('excel-file').files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { const wb = XLSX.read(e.target.result, {type:'array'}); const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); let batch = db.batch(), cnt=0, id=this.state.allQuestions.reduce((m,i)=>Math.max(m,i.id),0); for(let i=1; i<rows.length; i++) { if(!rows[i][2]) continue; id++; batch.set(db.collection("quiz_questions").doc(String(id)), { id, unit: rows[i][0]||"기타", type: "choice", question: rows[i][2], options: (rows[i][3]||"").split(','), answer: String(rows[i][4]), explanation: rows[i][5]||"", image: null }); cnt++; if(cnt%400===0) { await batch.commit(); batch=db.batch(); } } await batch.commit(); alert(cnt+"개 추가됨"); this.loadQuestionsFromFirebase(true); }; r.readAsArrayBuffer(f); },
+            addCustomQuestion: function() { const newQ = { id: this.state.allQuestions.reduce((m,i)=>Math.max(m,i.id),0)+1, unit: document.getElementById('new-q-unit').value, type: document.getElementById('new-q-type').value, question: document.getElementById('new-q-text').value, options: document.getElementById('new-q-options').value.split(',').map(s=>s.trim()), answer: document.getElementById('new-q-answer').value, explanation: document.getElementById('new-q-exp').value, image: document.getElementById('new-q-image-base64').value || null }; db.collection("quiz_questions").doc(String(newQ.id)).set(newQ).then(() => { alert("추가됨"); this.loadQuestionsFromFirebase(); }).catch(e=>alert("실패: "+e.message)); },
+            uploadExcel: function() { const f = document.getElementById('excel-file').files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { const wb = XLSX.read(e.target.result, {type:'array'}); const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); let batch = db.batch(), cnt=0, id=this.state.allQuestions.reduce((m,i)=>Math.max(m,i.id),0); for(let i=1; i<rows.length; i++) { if(!rows[i][2]) continue; id++; batch.set(db.collection("quiz_questions").doc(String(id)), { id, unit: rows[i][0]||"기타", type: "choice", question: rows[i][2], options: (rows[i][3]||"").split(','), answer: String(rows[i][4]), explanation: rows[i][5]||"", image: null }); cnt++; if(cnt%400===0) { await batch.commit(); batch=db.batch(); } } await batch.commit(); alert(cnt+"개 추가됨"); this.loadQuestionsFromFirebase(); }; r.readAsArrayBuffer(f); },
             downloadTemplate: function() { XLSX.writeFile(XLSX.utils.book_new(), "양식.xlsx"); },
             downloadExcel: function() { let csv="\uFEFF시간,반,번호,이름,점수\n"+this.state.logs.map(l=>`${l.timeString},${l.class},${l.number},${l.name},${l.score}`).join("\n"); const a=document.createElement("a"); a.href="data:text/csv;charset=utf-8,"+encodeURI(csv); a.download="결과.csv"; a.click(); }
         };
