@@ -44,7 +44,7 @@
     <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold text-stone-700">로딩 중...</p></div>
     <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
 
-    <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40">
+    <header class="bg-stone-900 text-white py-4 shadow-lg sticky top-0 z-40 cursor-pointer" onclick="location.reload()">
         <div class="container mx-auto px-4"><h1 class="text-lg md:text-xl font-bold tracking-tight truncate"><span class="mr-2">🧑‍🏫</span> 용신중학교 역사교사 방재석</h1></div>
     </header>
 
@@ -121,7 +121,7 @@
             state: { student:{}, questions:[], allQuestions:[], currentIndex:0, answers:{}, score:0, timer:null, timeLeft:60, isTimeOut:false, isQuizActive: false },
             
             init: function() { 
-                // 초기 실행 없음
+                // 초기 실행 없음 (버튼 클릭 시 로드)
             },
 
             showLoading: function(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; },
@@ -133,11 +133,16 @@
 
                 if(!cls || !num || !name) { alert("학년, 반, 번호, 이름을 모두 입력하세요."); return; }
                 
+                // [수정] 이름에 영어(알파벳) 포함 여부 검사
+                if(/[a-zA-Z]/.test(name)) {
+                    alert("이름에 영어를 사용할 수 없습니다. 한글 이름을 입력해주세요.");
+                    return;
+                }
+                
                 this.showLoading(true);
 
-                // [수정된 핵심 로직] 
-                // 파이어베이스 DB를 읽어서 체크하지 않고, '로컬 스토리지(브라우저 저장소)'를 확인합니다.
-                // 이렇게 하면 파이어베이스 규칙(로그인 필요)에 걸리지 않습니다.
+                // [수정] 새로고침 해도 10분 제한 유지 (브라우저 저장소 사용)
+                // 파이어베이스 DB를 읽지 않고 브라우저에 저장된 기록을 확인합니다.
                 const lastSubmitKey = `history_quiz_last_submit_${cls}_${num}_${name}`;
                 const lastSubmitTime = localStorage.getItem(lastSubmitKey);
 
@@ -156,7 +161,6 @@
                     // [문제 로드]
                     await this.loadRandomQuestions();
 
-                    // 문제가 하나도 안 뽑혔을 경우
                     if(!this.state.allQuestions || this.state.allQuestions.length === 0) {
                         throw new Error("로드된 문제가 없습니다.");
                     }
@@ -164,11 +168,8 @@
                 } catch(e) {
                     console.error("Error Detail:", e);
                     this.showLoading(false);
-                    // 권한 에러가 나더라도, 문제 로드가 실패했다면 알림
                     if (e.code === 'permission-denied') {
-                        // 만약 '문제 불러오기'조차 교사 전용으로 되어있다면 여기서 걸립니다.
-                        // 하지만 기존에 잘 되셨다면 '문제 읽기'는 허용되어 있을 겁니다.
-                        alert("오류: 문제 데이터를 불러올 권한이 없습니다.");
+                        alert("오류: 데이터베이스 접근 권한이 없습니다.");
                     } else {
                         alert("문제를 불러오는 중 오류가 발생했습니다.\n" + e.message);
                     }
@@ -194,8 +195,6 @@
             loadRandomQuestions: async function() {
                 if(!db) return;
                 
-                // [안전장치] 메타데이터 읽기도 권한 문제로 막힐 수 있으므로
-                // 실패하면 기본값 132를 사용하도록 try-catch로 감쌉니다.
                 let totalCount = 132; 
 
                 try {
@@ -204,8 +203,7 @@
                         totalCount = metaDoc.data().total_questions || 132;
                     }
                 } catch(e) {
-                    // 메타데이터 읽기 권한 없으면 조용히 기본값 사용
-                    console.log("메타데이터 읽기 건너뜀 (기본값 사용)");
+                    // 권한 문제 등으로 실패 시 기본값 사용
                 }
                 
                 const randomIds = new Set();
@@ -311,7 +309,7 @@
                 });
                 this.state.score = correct * 20; this.state.incorrectDetails = details;
                 
-                // [수정] 제출 완료 시점에 로컬 스토리지에 시간 기록 (재응시 방지용)
+                // [수정] 제출이 완료되는 시점에 브라우저에 시간 기록 (새로고침해도 유지됨)
                 if(this.state.student.storageKey) {
                     localStorage.setItem(this.state.student.storageKey, new Date().getTime());
                 }
