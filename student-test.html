@@ -135,8 +135,8 @@
                     }
                     
                     const u = userDoc.data();
-                    const myClass = parseInt(u.class);  // 숫자형 변환
-                    const myNum = parseInt(u.number);   // 숫자형 변환
+                    const myClass = u.class; // 여기선 DB 값 그대로 가져옴 (보통 숫자)
+                    const myNum = u.number;  // 여기선 DB 값 그대로 가져옴 (보통 숫자)
                     const myName = u.name.trim();
 
                     // 화면에 프로필 표시
@@ -154,11 +154,11 @@
                     );
 
                     // [쿼리 B] 반, 번호, 이름으로 찾기 (비로그인 기록 포함)
-                    // 주의: 이 부분 실행 시 콘솔에 'Index' 생성 링크가 뜰 수 있음
+                    // ★ 수정됨: DB에 "문자열"로 저장되어 있을 수 있으므로 String()으로 변환하여 검색
                     queries.push(
                         db.collection('quiz_results')
-                          .where('class', '==', myClass)
-                          .where('number', '==', myNum)
+                          .where('class', '==', String(myClass)) // 숫자 10 -> 문자 "10"
+                          .where('number', '==', String(myNum))  // 숫자 15 -> 문자 "15"
                           .where('name', '==', myName)
                           .get()
                     );
@@ -189,9 +189,6 @@
                         let dateB = b.timestamp ? b.timestamp.toDate() : new Date(0);
                         return dateB - dateA; // 내림차순
                     });
-
-                    // (옵션) 너무 많으면 최근 20개만 자르기
-                    // allResults = allResults.slice(0, 20);
 
                     this.historyData = allResults;
 
@@ -268,7 +265,6 @@
                     const ids = userLogs.map(log => String(log.id));
                     
                     // Firestore 'in' 쿼리는 최대 10개 제한이 있으므로 안전하게 끊어서 요청
-                    // (혹시 문제가 10개가 넘을 경우를 대비)
                     const chunks = [];
                     for (let i = 0; i < ids.length; i += 10) {
                         chunks.push(ids.slice(i, i + 10));
