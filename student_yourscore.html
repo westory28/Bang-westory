@@ -5,28 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>학생 성적 대시보드</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         /* 기본 스타일 */
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; color: #333; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* 헤더 */
-        .brand-header {
+        /* ★ New Header Style (이미지 참조) */
+        .main-header {
             background-color: #fff;
-            border-bottom: 1px solid #ddd;
-            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            padding: 0 40px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
-        .brand-logo { font-size: 18px; font-weight: bold; color: #2c3e50; display: flex; align-items: center; gap: 8px; }
-        
-        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
 
-        /* 타이틀 영역 */
-        .page-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #333; padding-bottom: 15px; }
+        .header-left { display: flex; align-items: center; }
+        
+        .logo-area { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; margin-right: 60px; }
+        .text-we { color: #2563eb; }   /* We - 파랑 */
+        .text-story { color: #f59e0b; } /* story - 노랑 */
+
+        .nav-menu { display: flex; gap: 40px; }
+        .nav-item { 
+            text-decoration: none; color: #666; font-size: 16px; font-weight: 500; 
+            position: relative; padding: 22px 0; transition: color 0.2s;
+        }
+        .nav-item:hover { color: #2563eb; }
+        /* 이미지상 '학생 관리'가 활성화(파랑) 되어 있음 */
+        .nav-item.active { color: #2563eb; font-weight: 700; }
+        .nav-item.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: #2563eb;
+        }
+
+        .btn-logout-pill {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-logout-pill:hover { background-color: #e5e7eb; }
+
+        /* 메인 컨테이너 */
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
+
+        /* 타이틀 영역 (기존 스타일 유지하되 조금 더 깔끔하게) */
+        .page-header { margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px; }
         .page-title { font-size: 24px; font-weight: 700; color: #111; margin: 0; }
-        .btn-logout { background-color: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
         
         /* 경고 박스 */
         .alert-box { 
@@ -56,7 +88,7 @@
         /* 과목 카드 스타일 */
         .subject-card { 
             background: #fff; border-radius: 8px; margin-bottom: 15px; 
-            border: 1px solid #e1e4e8; border-left: 5px solid #ccc; /* 기본값 */
+            border: 1px solid #e1e4e8; border-left: 5px solid #ccc; 
             transition: all 0.2s;
         }
         .subject-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
@@ -95,6 +127,17 @@
         }
         .scale-segment { flex: 1; display: flex; justify-content: center; align-items: center; }
 
+        /* ★ Footer Style */
+        .main-footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #9ca3af;
+            font-size: 13px;
+            border-top: 1px solid #eee;
+            margin-top: auto; /* 하단 고정 효과 */
+            background-color: #fff;
+        }
+
         /* 로그인 섹션 */
         #loginSection { max-width: 400px; margin: 100px auto; text-align: center; background: #fff; padding: 50px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .btn-google { background-color: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; font-size: 15px; width: 100%; cursor: pointer; border-radius: 4px; margin-top: 20px; transition: background 0.2s; }
@@ -107,7 +150,6 @@
         .bg-C { background-color: #fab005; } 
         .bg-D { background-color: #51cf66; } 
         .bg-E { background-color: #339af0; } 
-        /* ★ 미입력 상태 색상 추가 */
         .bg-none { background-color: #adb5bd; } 
 
     </style>
@@ -124,16 +166,25 @@
     </div>
 
     <div id="appSection" class="hidden">
-        <header class="brand-header">
-            <div class="brand-logo">🏫 용신중학교</div>
-            <div id="userName" style="font-size:14px; color:#555;"></div>
+        
+        <header class="main-header">
+            <div class="header-left">
+                <div class="logo-area">
+                    <span class="text-we">We</span><span class="text-story">story</span>
+                </div>
+                <nav class="nav-menu">
+                    <a href="#" class="nav-item">역사 퀴즈 대시보드</a>
+                    <a href="#" class="nav-item active">학생 관리</a>
+                    <a href="#" class="nav-item">성적 산출 관리</a>
+                </nav>
+            </div>
+            <button class="btn-logout-pill" onclick="logout()">로그아웃</button>
         </header>
 
         <div class="container">
             <div class="page-header">
                 <h1 class="page-title">나의 성적표</h1>
-                <button class="btn-logout" onclick="logout()">로그아웃</button>
-            </div>
+                </div>
 
             <div class="alert-box">
                 ⚠️ 이 결과는 참고용 시뮬레이션이며, 정확한 성적은 <u>나이스(NEIS)</u> 및 <u>성적 통지표</u>를 확인하세요.<br>
@@ -197,6 +248,10 @@
                 </div>
             </div>
         </div>
+
+        <footer class="main-footer">
+            Copyright © 역사교사 방재석. All rights reserved.
+        </footer>
     </div>
 
     <script type="module">
@@ -223,11 +278,8 @@
 
         const FIXED_SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '역사', '기가', '한문', '일본어', '미술', '체육'];
 
-        // ★ 등급 계산 함수 수정 (hasData 매개변수 추가)
         function getGradeInfo(score, hasData) {
-            if (!hasData) return { grade: '-', colorCode: '#adb5bd', class: 'bg-none', text: '미입력' }; // 데이터 없으면 회색
-
-            // 데이터가 있으면 정상 등급 반환
+            if (!hasData) return { grade: '-', colorCode: '#adb5bd', class: 'bg-none', text: '미입력' }; 
             if (score >= 90) return { grade: 'A', colorCode: '#fa5252', class: 'bg-A', text: `${score}점` };
             if (score >= 80) return { grade: 'B', colorCode: '#fd7e14', class: 'bg-B', text: `${score}점` };
             if (score >= 70) return { grade: 'C', colorCode: '#fab005', class: 'bg-C', text: `${score}점` };
@@ -239,7 +291,6 @@
             if (user) {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('appSection').classList.remove('hidden');
-                document.getElementById('userName').innerText = `${user.displayName} 학생`;
                 loadAllData();
             } else {
                 document.getElementById('loginSection').classList.remove('hidden');
@@ -272,14 +323,12 @@
             }
         };
 
-        // ★ 점수 계산 함수 수정: 입력 데이터 존재 여부(hasData) 확인
         function calculateTotal(plan) {
             let total = 0;
-            let hasData = false; // 하나라도 입력했는지 체크
+            let hasData = false; 
 
             plan.items.forEach((item, idx) => {
                 const saved = localStorage.getItem(`score_${plan.id}_${idx}`);
-                // saved가 존재하고 빈 문자열이 아니면 데이터가 있는 것으로 간주
                 if(saved !== null && saved !== "") {
                     hasData = true;
                     const val = parseFloat(saved);
@@ -309,13 +358,11 @@
                 return String(pGrade) === gradeFilter && pYear === yearFilter && pSem === semesterFilter;
             });
 
-            // 계산 로직 변경 적용
             filteredPlans = filteredPlans.map(plan => {
                 const result = calculateTotal(plan);
                 return { ...plan, currentScore: result.score, hasData: result.hasData };
             });
 
-            // 정렬 로직 (미입력 된 것은 성적순 정렬시 맨 뒤로 보낼 수도 있으나, 여기선 점수(0) 기준으로 처리됨)
             if (sortMode === 'score_high') {
                 filteredPlans.sort((a, b) => b.currentScore - a.currentScore);
             } else if (sortMode === 'name') {
@@ -341,17 +388,15 @@
 
             filteredPlans.forEach(plan => {
                 const { currentScore, hasData } = plan;
-                // ★ getGradeInfo에 hasData 전달
                 const info = getGradeInfo(currentScore, hasData);
 
                 chartLabels.push(plan.subject);
-                // 차트에는 미입력이면 0으로 표시하되 색상은 회색
                 chartData.push(currentScore); 
                 chartColors.push(info.colorCode);
 
                 const card = document.createElement('div');
                 card.className = 'subject-card';
-                card.style.borderLeftColor = info.colorCode; // 등급 색상 또는 회색
+                card.style.borderLeftColor = info.colorCode;
 
                 let itemsHtml = '';
                 plan.items.forEach((item, idx) => {
@@ -395,7 +440,6 @@
             const max = parseFloat(e.target.dataset.max);
             let val = parseFloat(e.target.value);
 
-            // 값이 있으면 Max 제한, 없으면(빈칸) 유지
             if (!isNaN(val)) {
                 if(val > max) { val = max; e.target.value = max; }
                 if(val < 0) { val = 0; e.target.value = 0; }
@@ -409,20 +453,18 @@
             const plan = allGradingPlans.find(p => p.id === planId);
             if(!plan) return;
 
-            // ★ UI 업데이트 시에도 hasData 로직 사용
             const { score, hasData } = calculateTotal(plan);
             const info = getGradeInfo(score, hasData);
 
             const textEl = document.getElementById(`score_text_${planId}`);
             const badgeEl = document.getElementById(`grade_badge_${planId}`);
             
-            textEl.innerText = info.text; // "92점" or "미입력"
+            textEl.innerText = info.text; 
             textEl.style.color = info.colorCode;
             
             badgeEl.innerText = info.grade;
             badgeEl.className = `grade-badge ${info.class}`;
             
-            // 카드 테두리 색 변경
             badgeEl.closest('.subject-card').style.borderLeftColor = info.colorCode;
 
             if(myChart) {
