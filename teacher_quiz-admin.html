@@ -16,18 +16,23 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f9fafb; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* 헤더 스타일 */
-        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
-        .nav-link { font-weight: 500; color: #4b5563; padding: 1.25rem 0.5rem; margin: 0 1rem; border-bottom: 3px solid transparent; transition: all 0.2s; text-decoration: none; font-size: 0.95rem; }
+        /* [공통 헤더 가이드라인 적용] */
+        /* 헤더 고정 스타일 */
+        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
+        
+        /* 네비게이션 공통 */
+        .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
+        
+        .nav-link { font-weight: 500; color: #6b7280; margin: 0 1rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
         .nav-link:hover { color: #111827; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
         
-        /* 로고 스타일 */
-        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; }
-        .logo-we { color: #2563eb; } /* Blue */
-        .logo-story { color: #f59e0b; } /* Orange */
+        /* 로고 */
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; }
+        .logo-we { color: #2563eb; }
+        .logo-story { color: #f59e0b; }
 
-        /* 테이블 및 기타 스타일 */
+        /* 테이블 및 기타 스타일 (기존 유지) */
         .admin-table th, .admin-table td { border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
         .col-answer { background-color: #fffbeb; color: #b45309; font-weight: bold; }
         .rate-bar-bg { background-color: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; width: 100%; margin-top: 4px; }
@@ -47,26 +52,20 @@
     </div>
 
     <header>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
-                        <span class="logo-text">
-                            <span class="logo-we">We</span><span class="logo-story">story</span>
-                        </span>
-                    </div>
-                    <div class="hidden sm:ml-10 sm:flex sm:space-x-4">
-                        <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link active">역사 퀴즈 대시보드</a>
-                        <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link">학생 관리</a>
-                        <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <button onclick="app.logout()" class="bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-2 rounded-full text-sm font-bold transition">
-                        로그아웃
-                    </button>
-                </div>
+        <div class="header-container">
+            <div class="logo-text" onclick="location.href='teacher-test.html'">
+                <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
+    
+            <nav class="hidden md:flex h-full">
+                <a href="teacher_quiz-admin.html" class="nav-link active">역사 퀴즈 대시보드</a>
+                <a href="teacher_student-list-admin.html" class="nav-link">학생 관리</a>
+                <a href="teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
+            </nav>
+    
+            <button onclick="app.logout()" class="text-stone-500 hover:text-stone-800 text-sm font-bold py-2 px-3 rounded hover:bg-stone-100 transition">
+                로그아웃
+            </button>
         </div>
     </header>
 
