@@ -7,9 +7,9 @@
     <style>
         /* 기본 스타일 */
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
-        a { text-decoration: none; color: inherit; }
+        a { text-decoration: none; color: inherit; } /* 링크 밑줄 제거 및 색상 상속 */
 
-        /* ★ NEW: 메인 헤더 스타일 (이미지 기반 구현) */
+        /* 메인 헤더 스타일 */
         .main-header {
             background-color: #fff;
             border-bottom: 1px solid #e0e0e0;
@@ -63,7 +63,7 @@
 
         .container { max-width: 1600px; margin: 0 auto; padding: 30px 20px; min-height: calc(100vh - 200px); }
 
-        /* 타이틀 영역 (기존 로그아웃 버튼 제거됨) */
+        /* 타이틀 영역 */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-title { font-size: 24px; font-weight: 800; color: #2c3e50; margin: 0; border-bottom: 3px solid #3498db; padding-bottom: 5px; display: inline-block; }
 
@@ -159,7 +159,7 @@
         .hidden { display: none !important; }
         .empty-msg { text-align: center; color: #999; padding: 40px; background: #fff; border-radius: 12px; }
 
-        /* ★ NEW: 푸터 스타일 */
+        /* 푸터 스타일 */
         .main-footer {
             text-align: center;
             padding: 40px 0;
@@ -185,13 +185,13 @@
     <div id="dashboardSection" class="hidden">
         <header class="main-header">
             <div class="header-content">
-                <div class="logo">
+                <a href="https://westory28.github.io/Bang-westory/teacher-test.html" class="logo">
                     <span class="logo-we">We</span><span class="logo-story">story</span>
-                </div>
+                </a>
                 <nav class="main-nav">
-                    <div class="nav-item">역사 퀴즈 대시보드</div>
-                    <div class="nav-item">학생 관리</div>
-                    <div class="nav-item active">성적 산출 관리</div>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-item">역사 퀴즈 대시보드</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-item">학생 관리</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-item active">성적 산출 관리</a>
                 </nav>
                 <button class="btn-logout-header" onclick="logout()">로그아웃</button>
             </div>
@@ -200,7 +200,7 @@
         <div class="container">
             <div class="page-header">
                 <h1 class="page-title">📝 평가 기준 관리</h1>
-                </div>
+            </div>
 
             <div class="dashboard-layout">
                 
