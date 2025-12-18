@@ -28,8 +28,13 @@
         }
 
         /* 폼 스타일 */
-        .form-group {
+        .form-row {
+            display: flex;
+            gap: 20px;
             margin-bottom: 25px;
+        }
+        .form-group {
+            flex: 1;
         }
         label {
             display: block;
@@ -37,15 +42,17 @@
             font-weight: 600;
             color: #555;
         }
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            box-sizing: border-box; /* 패딩 포함 너비 계산 */
+            box-sizing: border-box;
             transition: border-color 0.3s;
+            font-size: 16px;
+            background-color: #fff;
         }
-        input:focus {
+        input:focus, select:focus {
             border-color: #3498db;
             outline: none;
         }
@@ -69,7 +76,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .criteria-row input {
-            flex: 1; /* 공간을 균등하게 차지 */
+            flex: 1;
         }
         /* 삭제 버튼 스타일 */
         .remove-btn {
@@ -80,6 +87,7 @@
             border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.2s;
+            white-space: nowrap;
         }
         .remove-btn:hover {
             background-color: #c0392b;
@@ -116,6 +124,10 @@
 
         /* 반응형 디자인 */
         @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
             .criteria-row {
                 flex-direction: column;
             }
@@ -134,9 +146,17 @@
     <div class="container">
         <h1>📝 평가 기준 관리</h1>
 
-        <div class="form-group">
-            <label for="subjectName">과목명</label>
-            <input type="text" id="subjectName" placeholder="예: 한국사, 통합사회">
+        <div class="form-row">
+            <div class="form-group" style="flex: 0 0 150px;"> <label for="semesterSelect">학기</label>
+                <select id="semesterSelect">
+                    <option value="1학기">1학기</option>
+                    <option value="2학기">2학기</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="subjectName">과목명</label>
+                <input type="text" id="subjectName" placeholder="예: 한국사, 통합사회">
+            </div>
         </div>
 
         <label>평가 항목 및 반영 비율</label>
@@ -154,7 +174,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // 선생님의 파이어베이스 설정 키
+        // 선생님의 파이어베이스 설정 키 (그대로 유지)
         const firebaseConfig = {
           apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
           authDomain: "history-quiz-yongsin.firebaseapp.com",
@@ -165,7 +185,6 @@
           measurementId: "G-YG2SLS45D8"
         };
 
-        // 파이어베이스 초기화
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -182,16 +201,15 @@
             document.getElementById('criteriaList').appendChild(div);
         };
 
-        // 행 삭제 함수
         window.removeRow = (button) => {
             button.parentElement.remove();
         };
 
-        // 초기 행 하나 추가
-        addRow();
+        addRow(); // 초기 행 추가
 
-        // 파이어베이스 저장 함수
+        // 저장 함수 (학기 정보 추가됨)
         window.saveToFirebase = async () => {
+            const semester = document.getElementById('semesterSelect').value; // 학기 값 가져오기
             const subject = document.getElementById('subjectName').value.trim();
             
             if (!subject) {
@@ -232,20 +250,23 @@
             }
 
             try {
-                // Firestore에 데이터 저장
+                // Firestore에 데이터 저장 (semester 필드 추가)
                 await addDoc(collection(db, "grading_plans"), {
+                    semester: semester, // 여기 학기가 저장됩니다!
                     subject: subject,
                     items: items,
                     createdAt: new Date()
                 });
-                alert(`'${subject}' 과목의 평가 기준이 성공적으로 저장되었습니다!`);
-                // 저장 후 입력폼 초기화
+                
+                alert(`[${semester}] '${subject}' 과목 기준이 저장되었습니다!`);
+                
+                // 초기화
                 document.getElementById('subjectName').value = '';
                 document.getElementById('criteriaList').innerHTML = '';
-                addRow(); // 기본 행 하나 다시 추가
+                addRow(); 
             } catch (e) {
                 console.error("Error adding document: ", e);
-                alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+                alert("저장 중 오류가 발생했습니다.");
             }
         };
     </script>
