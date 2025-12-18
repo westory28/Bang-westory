@@ -3,45 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>교사 대시보드 - 평가 기준 관리</title>
+    <title>교사 대시보드 - 성적 산출 관리</title>
     <style>
         /* 기본 스타일 */
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
         a { text-decoration: none; color: inherit; }
+        * { box-sizing: border-box; }
 
-        /* [공통 헤더 가이드라인] 스타일 적용 */
-        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
+        /* [공통 헤더 가이드라인] + 모바일 반응형 추가 */
+        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
         
-        .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
-        
-        .nav-link { font-weight: 500; color: #6b7280; margin: 0 1rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
-        .nav-link:hover { color: #111827; }
-        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
+        .header-container { 
+            max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; 
+            height: 64px; display: flex; align-items: center; justify-content: space-between; 
+        }
         
         /* 로고 */
         .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; }
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
-        /* 로그아웃 버튼 스타일 (Tailwind 클래스 대응) */
-        .btn-logout-custom {
-            color: #78716c; /* text-stone-500 */
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 700; /* font-bold */
-            padding: 0.5rem 0.75rem; /* py-2 px-3 */
-            border-radius: 0.25rem; /* rounded */
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-logout-custom:hover {
-            color: #292524; /* hover:text-stone-800 */
-            background-color: #f5f5f4; /* hover:bg-stone-100 */
-        }
-        
-        /* 네비게이션 컨테이너 (md:flex h-full 대응) */
+        /* PC 네비게이션 (모바일에서 숨김) */
         .nav-container { display: flex; height: 100%; }
+        .nav-link { font-weight: 500; color: #6b7280; margin: 0 1rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .nav-link:hover { color: #111827; }
+        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
+
+        /* 우측 버튼 그룹 (로그아웃 + 햄버거) */
+        .right-actions { display: flex; align-items: center; gap: 10px; }
+
+        .btn-logout-custom {
+            color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem; background-color: transparent; border: none; cursor: pointer; transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-logout-custom:hover { color: #292524; background-color: #f5f5f4; }
+
+        /* 햄버거 버튼 (PC에서 숨김) */
+        .hamburger-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; padding: 5px; }
+        
+        /* 모바일 드롭다운 메뉴 (기본 숨김) */
+        .mobile-menu { display: none; background-color: #f8f9fa; border-top: 1px solid #e5e7eb; padding: 10px 0; }
+        .mobile-menu.open { display: block; }
+        .mobile-link { 
+            display: flex; align-items: center; padding: 15px 20px; 
+            font-size: 16px; font-weight: 500; color: #4b5563; 
+            border-bottom: 1px solid #eee; transition: background 0.2s; 
+        }
+        .mobile-link:last-child { border-bottom: none; }
+        .mobile-link:hover { background-color: #e5e7eb; }
+        .mobile-link.active { color: #2563eb; background-color: #eff6ff; font-weight: 700; }
+        .mobile-icon { margin-right: 12px; width: 20px; height: 20px; fill: currentColor; }
+
+        /* 반응형 미디어 쿼리 (768px 이하) */
+        @media (max-width: 1000px) {
+            .nav-container { display: none; } /* PC 메뉴 숨김 */
+            .hamburger-btn { display: block; } /* 햄버거 버튼 표시 */
+            .header-container { padding: 0 1rem; }
+        }
 
         /* 기존 페이지 스타일 유지 */
         .container { max-width: 1600px; margin: 0 auto; padding: 30px 20px; min-height: calc(100vh - 200px); }
@@ -128,21 +147,42 @@
     </div>
 
     <div id="dashboardSection" class="hidden">
+        
         <header>
             <div class="header-container">
-                <div class="logo-text" onclick="location.href='teacher-test.html'">
+                <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/teacher-test.html'">
                     <span class="logo-we">We</span><span class="logo-story">story</span>
                 </div>
         
                 <nav class="nav-container">
-                    <a href="teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
-                    <a href="teacher_student-list-admin.html" class="nav-link">학생 관리</a>
-                    <a href="teacher_yourscore-admin.html" class="nav-link active">성적 산출 관리</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link">학생 관리</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link active">성적 산출 관리</a>
                 </nav>
         
-                <button onclick="logout()" class="btn-logout-custom">
-                    로그아웃
-                </button>
+                <div class="right-actions">
+                    <button onclick="logout()" class="btn-logout-custom">
+                        로그아웃
+                    </button>
+                    <button class="hamburger-btn" onclick="toggleMobileMenu()">
+                        ☰
+                    </button>
+                </div>
+            </div>
+
+            <div id="mobileMenu" class="mobile-menu">
+                <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="mobile-link">
+                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+                    역사 퀴즈 대시보드
+                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="mobile-link">
+                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                    학생 관리
+                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="mobile-link active">
+                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h5v-2h-5v2zm0-4h5v-2h-5v2zm0-4h5V7h-5v2zM7 7h5v2H7V7zm0 4h5v2H7v-2zm0 4h5v2H7v-2z"/></svg>
+                    성적 산출 관리
+                </a>
             </div>
         </header>
 
@@ -243,6 +283,12 @@
             "도덕": 6, "과학": 7, "기술가정": 8, "기가": 8, 
             "체육": 9, "음악": 10, "미술": 11, 
             "한문": 12, "정보": 13, "진로": 14
+        };
+        
+        // ★ 모바일 메뉴 토글 함수 (전역)
+        window.toggleMobileMenu = () => {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('open');
         };
 
         onAuthStateChanged(auth, (user) => {
