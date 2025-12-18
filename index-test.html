@@ -12,46 +12,56 @@
         
         /* 2. 로그인 화면 (정중앙 배치) */
         #login-view { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .brand-title { font-size: 3rem; font-weight: 800; color: #1c1e21; margin-bottom: 0.5rem; }
-        .brand-subtitle { font-size: 1.5rem; color: #606770; margin-bottom: 3rem; font-weight: 500; }
-        .google-btn { 
-            background: #fff; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 40px; 
-            font-size: 16px; font-weight: 600; color: #3c4043; cursor: pointer; display: flex; align-items: center; gap: 10px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;
-        }
-        .google-btn:hover { background: #f7f8f8; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+        
+        /* 브랜드 타이틀 색상 수정 (We:파랑, story:노랑) */
+        .brand-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .brand-title .we { color: #1a73e8; } /* 파란색 */
+        .brand-title .story { color: #f9ab00; } /* 노란색 */
 
-        /* 3. 메인 메뉴 화면 (로그인 후) */
+        .brand-subtitle { font-size: 1.5rem; color: #606770; margin-bottom: 3rem; font-weight: 500; }
+        
+        .google-btn { 
+            background: #fff; border: 1px solid #dadce0; padding: 12px 32px; border-radius: 40px; 
+            font-size: 18px; font-weight: 600; color: #3c4043; cursor: pointer; display: flex; align-items: center; gap: 12px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: all 0.2s;
+        }
+        .google-btn:hover { background: #f7f8f8; box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
+        /* 구글 로고 이미지 스타일 지정 */
+        .google-icon { width: 24px; height: 24px; }
+
+        /* 3. 메인 메뉴 화면 (로그인 후) - 기존과 동일 */
         #main-view { max-width: 1000px; margin: 60px auto; padding: 0 20px; width: 100%; }
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .user-info { font-size: 16px; color: #606770; }
         
         .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
         .menu-card {
             background: white; border-radius: 16px; padding: 40px 30px; text-align: center; text-decoration: none; color: inherit;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; display: block;
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #1877f2; }
         .emoji-icon { font-size: 48px; margin-bottom: 20px; display: block; }
         .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
-        .card-desc { color: #606770; font-size: 15px; }
+        .card-desc { color: #606770; font-size: 15px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
     <div id="login-view">
-        <div class="brand-title">Westory</div>
+        <div class="brand-title">
+            <span class="we">We</span><span class="story">story</span>
+        </div>
         <div class="brand-subtitle">: 우리들의 이야기</div>
+        
         <button class="google-btn" onclick="handleLogin()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt="G">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" class="google-icon" alt="G">
             Google 계정으로 시작하기
         </button>
     </div>
 
     <div id="main-view" class="hidden">
         <div class="header-bar">
-            <h2 style="margin:0;">반갑습니다, 학생님 👋</h2>
-            <button class="google-btn" onclick="handleLogout()" style="padding: 8px 16px; font-size: 14px;">로그아웃</button>
+            <h2 style="margin:0; color: #1c1e21;">반갑습니다, 학생님 👋</h2>
+            <button class="google-btn" onclick="handleLogout()" style="padding: 8px 20px; font-size: 14px; border-radius: 8px;">로그아웃</button>
         </div>
 
         <div class="card-container">
@@ -74,7 +84,7 @@
     </div>
 
     <script>
-        // 로그인 시뮬레이션 스크립트 (실제 Firebase 연동 시 교체)
+        // 로그인 시뮬레이션 (기존과 동일)
         function handleLogin() {
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
