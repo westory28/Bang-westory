@@ -27,11 +27,20 @@
             margin-bottom: 10px;
             font-size: 24px;
         }
-        p.subtitle {
+        
+        /* ⚠️ 경고 문구 스타일 */
+        .alert-box {
+            background-color: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
             text-align: center;
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            word-break: keep-all;
         }
 
         /* 선택 및 입력 영역 */
@@ -56,23 +65,44 @@
             justify-content: space-between;
             align-items: center;
         }
+        
+        /* [지필/수행] 배지 스타일 */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .b-ji { background-color: #e53e3e; } /* 지필: 빨강 */
+        .b-su { background-color: #3182ce; } /* 수행: 파랑 */
+        .b-etc { background-color: #718096; } /* 기타: 회색 */
+
         .input-label {
             font-weight: 600;
             font-size: 15px;
-            color: #555;
+            color: #2d3748;
         }
         .input-sub {
             font-size: 12px;
-            color: #888;
+            color: #718096;
             margin-top: 4px;
         }
         input[type="number"] {
             width: 80px;
             padding: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #cbd5e0;
             border-radius: 6px;
             text-align: center;
             font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        input[type="number"]:focus {
+            border-color: #3182ce;
+            outline: none;
         }
 
         /* 결과 카드 스타일 */
@@ -115,7 +145,6 @@
             font-size: 16px;
         }
         
-        /* 로딩/초기 상태 */
         .hidden { display: none; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -123,7 +152,11 @@
 <body>
     <div class="container">
         <h1>📊 성적 목표 계산기</h1>
-        <p class="subtitle">입력한 점수는 서버에 저장되지 않고<br>브라우저에 자동 저장됩니다.</p>
+        
+        <div class="alert-box">
+            ⚠️ 이 등급 산출 결과는 참고용 시뮬레이션입니다.<br>
+            정확한 성적 및 석차 등급은 반드시<br>나이스(NEIS) 혹은 성적표를 통해 확인하세요.
+        </div>
 
         <label for="subjectSelect" style="font-weight:bold; display:block; margin-bottom:8px;">과목 선택</label>
         <select id="subjectSelect">
@@ -167,7 +200,6 @@
 
         // 1. 과목 목록 불러오기 (학기 순 정렬)
         async function loadSubjects() {
-            // 날짜순(최신순) 혹은 학기순으로 정렬해서 가져오면 좋습니다
             const q = query(collection(db, "grading_plans"), orderBy("createdAt", "desc"));
             const querySnapshot = await getDocs(q);
             
@@ -177,11 +209,9 @@
                 const data = doc.data();
                 const option = document.createElement("option");
                 option.value = doc.id;
-                // [학기] 과목명 형태로 표시
                 const semesterLabel = data.semester ? `[${data.semester}] ` : '';
                 option.text = `${semesterLabel}${data.subject}`;
                 
-                // 데이터셋에 평가 기준 리스트 저장
                 option.dataset.plan = JSON.stringify(data.items);
                 select.appendChild(option);
             });
@@ -204,14 +234,19 @@
             const subjectId = select.value;
 
             items.forEach((item, index) => {
-                // 로컬스토리지에서 저장된 값 불러오기
                 const savedScore = localStorage.getItem(`score_${subjectId}_${index}`) || "";
                 
+                // 배지 HTML 생성 (지필/수행 구분)
+                let badgeHtml = '';
+                if (item.type === '지필') badgeHtml = '<span class="badge b-ji">지필</span>';
+                else if (item.type === '수행') badgeHtml = '<span class="badge b-su">수행</span>';
+                else badgeHtml = '<span class="badge b-etc">평가</span>';
+
                 const div = document.createElement("div");
                 div.className = "input-group";
                 div.innerHTML = `
                     <div>
-                        <div class="input-label">${item.name}</div>
+                        <div class="input-label">${badgeHtml}${item.name}</div>
                         <div class="input-sub">만점: ${item.maxScore}점 / 반영: ${item.ratio}%</div>
                     </div>
                     <input type="number" class="score-input" data-index="${index}" 
@@ -221,12 +256,11 @@
                 container.appendChild(div);
             });
 
-            // 이벤트 리스너 연결
             document.querySelectorAll('.score-input').forEach(input => {
                 input.addEventListener('input', handleInput);
             });
             
-            calculateAndSimulate(); // 즉시 계산
+            calculateAndSimulate(); 
         }
 
         // 3. 입력 핸들러 (저장 + 계산)
@@ -238,7 +272,7 @@
             // 만점 초과 입력 방지
             const max = parseFloat(currentPlanItems[index].maxScore);
             if(parseFloat(value) > max) {
-                value = max; // 만점으로 강제 조정
+                value = max; 
                 e.target.value = max; 
             }
 
@@ -246,7 +280,7 @@
             calculateAndSimulate();
         }
 
-        // 4. 핵심 로직: 계산 및 시뮬레이션
+        // 4. 계산 및 시뮬레이션
         function calculateAndSimulate() {
             let totalConverted = 0;
             let remainingItems = [];
@@ -258,18 +292,15 @@
                 const item = currentPlanItems[idx];
 
                 if (!isNaN(rawScore)) {
-                    // 환산 점수 누적
                     totalConverted += (rawScore / item.maxScore) * item.ratio;
                 } else {
                     remainingItems.push(item);
                 }
             });
 
-            // 화면 표시 (소수점 1자리)
             const finalScore = totalConverted.toFixed(1);
             document.getElementById('currentScore').innerText = finalScore;
             
-            // 등급 판정
             let grade = "E";
             if (finalScore >= 90) grade = "A";
             else if (finalScore >= 80) grade = "B";
@@ -277,49 +308,39 @@
             else if (finalScore >= 60) grade = "D";
             document.getElementById('currentGrade').innerText = grade;
 
-            // 시뮬레이션 메시지 로직
             const simBox = document.getElementById('simulationResult');
             simBox.classList.remove("hidden");
             
-            // 목표 계산 함수
             const checkTarget = (target) => {
                 const gap = target - totalConverted;
-                if (gap <= 0) return { possible: true, gap: 0, msg: "이미 달성!" };
+                if (gap <= 0) return { possible: true, gap: 0 };
                 
-                // 남은 시험의 환산 만점 총합
                 let maxPossibleRemaining = 0;
                 remainingItems.forEach(i => maxPossibleRemaining += i.ratio);
 
                 if (gap > maxPossibleRemaining) {
-                    return { possible: false, gap: gap }; // 불가능
+                    return { possible: false, gap: gap };
                 }
-                return { possible: true, gap: gap }; // 가능
+                return { possible: true, gap: gap };
             };
 
-            // 1단계: A등급(90) 도전
             const planA = checkTarget(90);
 
             if (remainingItems.length === 0) {
-                // 모든 시험 끝남
-                simBox.innerHTML = `<strong>수고하셨습니다!</strong>최종 등급은 ${grade}입니다.`;
+                simBox.innerHTML = `<strong>수고하셨습니다!</strong>모든 평가가 끝났습니다. <br>최종 환산 점수는 ${finalScore}점 입니다.`;
                 simBox.style.backgroundColor = "#e2e3e5";
                 simBox.style.color = "#383d41";
                 simBox.style.borderColor = "#d6d8db";
             } 
             else if (planA.gap <= 0) {
-                // 이미 A등급 확보
                 simBox.innerHTML = `<strong>🎉 축하합니다!</strong>남은 시험 결과와 상관없이 A등급 확정입니다!`;
                 simBox.style.backgroundColor = "#d4edda";
                 simBox.style.color = "#155724";
                 simBox.style.borderColor = "#c3e6cb";
             }
             else if (planA.possible) {
-                // A등급 가능
-                const item = remainingItems[0]; // 다음 시험 하나만 예시로
-                
+                const item = remainingItems[0];
                 if(remainingItems.length === 1) {
-                    // 딱 하나 남았을 때 정확한 점수 제시
-                    // 필요점수 = (부족한환산점수 * 만점) / 비율
                     const needRaw = (planA.gap * item.maxScore) / item.ratio;
                     simBox.innerHTML = `<strong>💡 A등급을 목표로 한다면?</strong>남은 '${item.name}'에서 <br>최소 <u>${Math.ceil(needRaw)}점</u> 이상 받아야 해요!`;
                 } else {
@@ -330,7 +351,6 @@
                 simBox.style.borderColor = "#ffeeba";
             } 
             else {
-                // A등급 불가능 -> B등급(80) 제안 (현실적 조언)
                 const planB = checkTarget(80);
                 if (planB.possible) {
                      const item = remainingItems[0];
