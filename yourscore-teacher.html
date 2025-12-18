@@ -99,19 +99,24 @@
             cursor: pointer;
         }
 
+        /* ★ 버튼 가로 배치를 위한 CSS 수정 ★ */
         .plan-card { 
             background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            border-left: 5px solid #3498db; display: flex; justify-content: space-between; align-items: center;
+            border-left: 5px solid #3498db; display: flex; justify-content: space-between; align-items: flex-start; /* 상단 정렬로 변경 */
             transition: transform 0.2s;
             margin-bottom: 20px; 
         }
         .plan-card:last-child { margin-bottom: 0; }
         .plan-card:hover { transform: translateX(5px); }
         
+        .plan-info {
+            flex: 1; /* 너비를 가능한 많이 차지하도록 */
+            margin-right: 20px; /* 버튼과의 간격 */
+        }
         .plan-info h3 { margin: 0 0 5px 0; font-size: 18px; color: #333; }
         .plan-meta { font-size: 13px; color: #666; }
-        .plan-items { font-size: 13px; color: #555; margin-top: 10px; line-height: 1.6; background: #f9f9f9; padding: 10px; border-radius: 6px; }
-        .plan-actions { display: flex; gap: 8px; flex-direction: column; }
+        .plan-items { font-size: 13px; color: #555; margin-top: 10px; line-height: 1.6; background: #f9f9f9; padding: 10px; border-radius: 6px; white-space: normal; word-break: keep-all; } /* 줄바꿈 설정 */
+        .plan-actions { display: flex; gap: 8px; flex-direction: row; flex-shrink: 0; } /* 가로 배치, 줄어들지 않게 */
         
         .btn-sm { padding: 8px 12px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn-edit { background-color: #f39c12; }
@@ -165,7 +170,7 @@
                                 <option value="2학년">2학년</option>
                                 <option value="3학년">3학년</option>
                             </select>
-                            </div>
+                        </div>
                     </div>
 
                     <div class="input-card">
