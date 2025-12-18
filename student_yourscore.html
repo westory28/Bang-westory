@@ -24,9 +24,10 @@
 
         .header-left { display: flex; align-items: center; }
         
-        .logo-area { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; margin-right: 60px; }
-        .text-we { color: #2563eb; }   /* We - 파랑 */
-        .text-story { color: #f59e0b; } /* story - 노랑 */
+        .logo-area { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; margin-right: 60px; transition: opacity 0.2s; }
+        .logo-area:hover { opacity: 0.8; }
+        .text-we { color: #2563eb; }   
+        .text-story { color: #f59e0b; } 
 
         .nav-menu { display: flex; gap: 40px; }
         .nav-item { 
@@ -34,8 +35,6 @@
             position: relative; padding: 22px 0; transition: color 0.2s;
         }
         .nav-item:hover { color: #2563eb; }
-        
-        /* 활성화 된 메뉴 스타일 */
         .nav-item.active { color: #2563eb; font-weight: 700; }
         .nav-item.active::after {
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: #2563eb;
@@ -125,6 +124,44 @@
         }
         .scale-segment { flex: 1; display: flex; justify-content: center; align-items: center; }
 
+        /* ★ 동의 팝업 (모달) 스타일 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px;
+            width: 90%; max-width: 480px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease-out;
+            position: relative;
+        }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-icon { font-size: 40px; margin-bottom: 10px; }
+        .modal-title { font-size: 20px; font-weight: 800; color: #d97706; margin-bottom: 15px; }
+        .modal-text { font-size: 15px; line-height: 1.6; color: #333; margin-bottom: 20px; word-break: keep-all; }
+        .sub-text { font-size: 13px; color: #6b7280; display: block; margin-top: 8px; background: #f3f4f6; padding: 8px; border-radius: 4px;}
+        
+        .modal-check-area { 
+            margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; 
+            padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; transition: background 0.2s;
+        }
+        .modal-check-area:hover { background: #f9fafb; }
+        .modal-check-area input { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
+        .modal-check-area label { cursor: pointer; font-size: 15px; font-weight: bold; color: #374151; }
+        
+        .btn-confirm {
+            background-color: #2563eb; color: white; border: none; padding: 14px 0; width: 100%;
+            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-confirm:disabled { background-color: #d1d5db; cursor: not-allowed; color: #9ca3af; }
+        .btn-confirm:not(:disabled):hover { background-color: #1d4ed8; transform: translateY(-1px); }
+
+
         /* 푸터 */
         .main-footer {
             text-align: center;
@@ -164,15 +201,34 @@
 
     <div id="appSection" class="hidden">
         
+        <div id="warningModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-icon">⚠️</div>
+                <h3 class="modal-title">주의사항 안내</h3>
+                <div class="modal-text">
+                    이 결과는 <strong>참고용 시뮬레이션</strong>이며,<br>
+                    정확한 성적은 <u>나이스(NEIS)</u> 및 <u>성적 통지표</u>를 확인하세요.
+                    <span class="sub-text">입력한 점수는 서버에 저장되지 않고<br>내 컴퓨터(브라우저)에만 임시로 남습니다.</span>
+                </div>
+                
+                <div class="modal-check-area" onclick="document.getElementById('agreeCheck').click()">
+                    <input type="checkbox" id="agreeCheck" onclick="event.stopPropagation()">
+                    <label for="agreeCheck">위 내용을 확인하였으며 동의합니다.</label>
+                </div>
+                
+                <button id="btnStart" class="btn-confirm" disabled>확 인</button>
+            </div>
+        </div>
+
         <header class="main-header">
             <div class="header-left">
-                <div class="logo-area">
+                <div class="logo-area" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
                     <span class="text-we">We</span><span class="text-story">story</span>
                 </div>
                 <nav class="nav-menu">
-                    <a href="#" class="nav-item">역사 퀴즈</a>
-                    <a href="#" class="nav-item">학습 기록</a>
-                    <a href="#" class="nav-item active">나의 성적표</a>
+                    <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-item">역사 퀴즈</a>
+                    <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-item">학습 기록</a>
+                    <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-item active">나의 성적표</a>
                 </nav>
             </div>
             <button class="btn-logout-pill" onclick="logout()">로그아웃</button>
@@ -288,12 +344,29 @@
             if (user) {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('appSection').classList.remove('hidden');
+                
+                // ★ 로그인 성공 시 팝업 띄우기
+                document.getElementById('warningModal').classList.remove('hidden');
+                
                 loadAllData();
             } else {
                 document.getElementById('loginSection').classList.remove('hidden');
                 document.getElementById('appSection').classList.add('hidden');
             }
         });
+
+        // ★ 동의 체크박스 로직
+        const checkbox = document.getElementById('agreeCheck');
+        const btnStart = document.getElementById('btnStart');
+
+        checkbox.addEventListener('change', (e) => {
+            btnStart.disabled = !e.target.checked;
+        });
+
+        btnStart.addEventListener('click', () => {
+            document.getElementById('warningModal').classList.add('hidden');
+        });
+
 
         window.loginWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { alert("로그인 실패"); } };
         window.logout = async () => { if(confirm("로그아웃 하시겠습니까?")) { await signOut(auth); location.reload(); } };
