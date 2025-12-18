@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 성적 대시보드</title>
+    <title>나의 성적 퀘스트</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         /* 기본 스타일 */
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
         
         /* 브랜드 헤더 */
         .brand-header {
-            background-color: #1a1a1a;
+            background-color: #2c3e50;
             color: #fff;
             padding: 15px 20px;
             display: flex;
@@ -56,51 +57,72 @@
             .btn-logout { top: 5px; }
         }
 
-        /* 필터 박스 */
-        .big-filter-card {
-            background-color: #e3f2fd;
-            border: 2px solid #2196f3;
+        /* 컨트롤 패널 (필터 & 정렬) */
+        .control-panel {
+            background-color: #fff;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
         }
-        .filter-header { font-size: 16px; font-weight: bold; color: #1565c0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        .filter-row { display: flex; gap: 10px; }
-        .filter-row select { 
-            flex: 1; padding: 12px; font-size: 16px; border: 1px solid #90caf9; 
+        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .control-row:last-child { margin-bottom: 0; }
+        
+        select { 
+            flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ddd; 
             border-radius: 8px; background: white; font-weight: bold; cursor: pointer;
         }
-        .filter-row select:focus { border-color: #2196f3; outline: none; box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2); }
+        select:focus { border-color: #3498db; outline: none; }
+        
+        .sort-label { font-size: 14px; font-weight: bold; color: #555; display: flex; align-items: center; margin-right: 10px; width: 80px;}
 
         /* 차트 디자인 */
         .chart-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .chart-container { position: relative; height: 250px; width: 100%; overflow-x: auto; overflow-y: hidden; }
         .chart-scroll-wrapper { min-width: 100%; height: 100%; }
 
-        /* ★ 등급 기준표 막대 (색상 및 순서 변경: A -> E) */
-        .grade-scale-bar { display: flex; height: 35px; border-radius: 8px; overflow: hidden; margin-top: 15px; font-weight: bold; color: white; text-shadow: 0 1px 1px rgba(0,0,0,0.3); font-size: 12px; }
+        /* 등급 기준표 */
+        .grade-scale-bar { display: flex; height: 30px; border-radius: 15px; overflow: hidden; margin-top: 15px; font-weight: bold; color: white; text-shadow: 0 1px 1px rgba(0,0,0,0.3); font-size: 11px; }
         .scale-segment { flex: 1; display: flex; justify-content: center; align-items: center; }
         
-        /* ★ 새로운 색상 팔레트 적용 */
-        .bg-A { background-color: #fa5252; } /* 빨강 (A) */
-        .bg-B { background-color: #fd7e14; } /* 주황 (B) */
-        .bg-C { background-color: #fab005; } /* 노랑 (C) */
-        .bg-D { background-color: #51cf66; } /* 연두 (D) */
-        .bg-E { background-color: #339af0; } /* 파랑 (E) */
+        /* 색상 팔레트 */
+        .bg-A { background-color: #fa5252; } 
+        .bg-B { background-color: #fd7e14; } 
+        .bg-C { background-color: #fab005; } 
+        .bg-D { background-color: #51cf66; } 
+        .bg-E { background-color: #339af0; } 
 
-        /* 과목 카드 */
+        /* 과목 카드 (게이미피케이션) */
         .subject-card { 
             background: #fff; border-radius: 12px; margin-bottom: 15px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            border-left: 6px solid #ddd; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            border: 1px solid #eee;
             cursor: pointer; overflow: hidden; transition: transform 0.2s;
+            position: relative;
         }
-        .subject-card:hover { transform: translateY(-2px); }
+        .subject-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        
+        /* 왼쪽 컬러 띠 대신 상단 HP바 느낌 */
+        .hp-container {
+            height: 6px; width: 100%; background: #eee;
+            position: absolute; top: 0; left: 0;
+        }
+        .hp-fill { height: 100%; transition: width 1s ease-in-out; }
+
         .card-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .subject-name { font-size: 17px; font-weight: bold; color: #333; }
-        .total-score { font-size: 22px; font-weight: bold; margin-right: 8px; transition: color 0.3s; }
-        .grade-pill { display: inline-block; width: 30px; height: 30px; line-height: 30px; border-radius: 50%; text-align: center; color: white; font-weight: bold; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .toggle-hint { font-size: 12px; color: #999; margin-left: 10px; }
+        
+        .subject-info { display: flex; align-items: center; gap: 10px; }
+        .subject-icon { font-size: 24px; }
+        .subject-name { font-size: 18px; font-weight: 800; color: #2c3e50; }
+        
+        .score-display { text-align: right; }
+        .rank-badge { 
+            display: inline-block; padding: 4px 10px; border-radius: 20px; 
+            color: white; font-weight: bold; font-size: 12px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); margin-bottom: 4px;
+        }
+        .current-score { font-size: 14px; color: #777; font-weight: 600; }
+        .toggle-hint { font-size: 11px; color: #aaa; margin-top: 2px; }
 
         .card-body { padding: 0 20px 20px 20px; display: none; background-color: #fafafa; border-top: 1px solid #eee; }
         .card-body.expanded { display: block; animation: slideDown 0.3s ease-out; }
@@ -111,36 +133,36 @@
         .input-row:last-child { border-bottom: none; }
         .item-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
         .item-meta { font-size: 12px; color: #888; }
-        .score-input { width: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 16px; background: #fff; }
+        .score-input { width: 60px; padding: 8px; border: 2px solid #eee; border-radius: 8px; text-align: center; font-size: 16px; background: #fff; font-weight: bold; color: #333; transition: border-color 0.2s; }
+        .score-input:focus { border-color: #3498db; outline: none; }
         
-        .badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; color: white; margin-right: 6px; vertical-align: middle; }
+        .badge-type { padding: 2px 6px; border-radius: 4px; font-size: 10px; color: white; margin-right: 6px; vertical-align: middle; }
         .b-ji { background: #e74c3c; } .b-su { background: #3498db; }
 
         .hidden { display: none !important; }
         .alert-box { background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 13px; font-weight: bold;}
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="loginSection">
-        <h2>🔐 학생 성적 대시보드</h2>
-        <p>구글 계정으로 로그인하여<br>나의 성적을 관리하세요.</p>
+        <h2>⚔️ 성적 퀘스트 로그인</h2>
+        <p>구글 계정으로 접속하여<br>나의 학습 레벨을 확인하세요.</p>
         <button class="btn-google" onclick="loginWithGoogle()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20">
-            Google 계정으로 로그인
+            Google 계정으로 시작하기
         </button>
     </div>
 
     <div id="appSection" class="hidden">
         <header class="brand-header">
-            <span class="brand-icon">🧑‍🏫</span>
-            용신중학교 역사교사 방재석
+            <span class="brand-icon">🛡️</span>
+            용신중학교 학습 길드
         </header>
 
         <div class="container">
             <div class="page-title-area">
-                <h1 class="page-title">📊 성적 대시보드</h1>
+                <h1 class="page-title">📊 나의 스테이터스</h1>
                 <button class="btn-logout" onclick="logout()">로그아웃</button>
             </div>
 
@@ -148,23 +170,30 @@
                 
                 <div class="left-panel">
                     
-                    <div class="big-filter-card">
-                        <div class="filter-header">📌 Step 1. 학년도와 학기를 먼저 선택하세요</div>
-                        <div class="filter-row">
+                    <div class="control-panel">
+                        <div class="control-row">
+                            <span class="sort-label">📅 학기 선택</span>
                             <select id="yearFilter" onchange="renderDashboard()">
                                 <option value="2025">2025학년도</option>
                                 <option value="2026">2026학년도</option>
-                                <option value="2027">2027학년도</option>
                             </select>
                             <select id="semesterFilter" onchange="renderDashboard()">
                                 <option value="1학기">1학기</option>
                                 <option value="2학기">2학기</option>
                             </select>
                         </div>
+                        <div class="control-row">
+                            <span class="sort-label">🔍 정렬 기준</span>
+                            <select id="sortFilter" onchange="renderDashboard()">
+                                <option value="default">📜 교과표 순서 (국영수...)</option>
+                                <option value="score">🔥 전투력(성적) 높은 순</option>
+                                <option value="name">🔡 과목 이름 순</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="alert-box">
-                        ⚠️ 결과는 시뮬레이션이며, 실제 성적은 나이스(NEIS)와 다를 수 있습니다.
+                        💾 입력한 점수는 서버에 저장되지 않고 내 컴퓨터에만 남습니다.<br>(개인정보 보호 안심 구역)
                     </div>
 
                     <div id="subjectsList">
@@ -173,17 +202,18 @@
 
                 <div class="right-panel">
                     <div class="chart-card">
+                        <h3 style="margin:0 0 15px 0; font-size:16px;">📈 능력치 그래프</h3>
                         <div class="chart-container">
                             <div class="chart-scroll-wrapper">
                                 <canvas id="gradeChart"></canvas>
                             </div>
                         </div>
                         <div class="grade-scale-bar">
-                            <div class="scale-segment bg-A">A (90~)</div>
-                            <div class="scale-segment bg-B">B (80~)</div>
-                            <div class="scale-segment bg-C">C (70~)</div>
-                            <div class="scale-segment bg-D">D (60~)</div>
-                            <div class="scale-segment bg-E">E (~59)</div>
+                            <div class="scale-segment bg-A">Master</div>
+                            <div class="scale-segment bg-B">Diamond</div>
+                            <div class="scale-segment bg-C">Platinum</div>
+                            <div class="scale-segment bg-D">Gold</div>
+                            <div class="scale-segment bg-E">Novice</div>
                         </div>
                     </div>
                 </div>
@@ -194,7 +224,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -214,34 +244,31 @@
         let allGradingPlans = [];
         let myChart = null;
         
-        // ★ 새로운 색상 코드 정의 (A=빨강 ~ E=파랑)
-        const gradeColors = { 
-            A: '#fa5252', // 빨강
-            B: '#fd7e14', // 주황
-            C: '#fab005', // 노랑
-            D: '#51cf66', // 연두
-            E: '#339af0'  // 파랑
+        // 정렬 순서 상수 (교과표 순)
+        const SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '역사', '기가', '한문', '일본어', '미술', '체육'];
+
+        // 게임 등급 및 색상 정의
+        const gameRanks = {
+            A: { label: 'Master', icon: '🏆', color: '#fa5252' },
+            B: { label: 'Diamond', icon: '💎', color: '#fd7e14' },
+            C: { label: 'Platinum', icon: '⚔️', color: '#fab005' },
+            D: { label: 'Gold', icon: '🛡️', color: '#51cf66' },
+            E: { label: 'Novice', icon: '🌱', color: '#339af0' }
         };
 
-        function getGradeInfo(score) {
-            if (score >= 90) return { grade: 'A', color: gradeColors.A };
-            if (score >= 80) return { grade: 'B', color: gradeColors.B };
-            if (score >= 70) return { grade: 'C', color: gradeColors.C };
-            if (score >= 60) return { grade: 'D', color: gradeColors.D };
-            return { grade: 'E', color: gradeColors.E };
+        function getRankInfo(score) {
+            if (score >= 90) return gameRanks.A;
+            if (score >= 80) return gameRanks.B;
+            if (score >= 70) return gameRanks.C;
+            if (score >= 60) return gameRanks.D;
+            return gameRanks.E;
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const q = query(collection(db, "users"), where("email", "==", user.email));
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.remove('hidden');
-                    loadAllData();
-                } else {
-                    alert("등록된 학생 정보가 없습니다."); signOut(auth);
-                }
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                loadAllData();
             } else {
                 document.getElementById('loginSection').classList.remove('hidden');
                 document.getElementById('appSection').classList.add('hidden');
@@ -253,6 +280,7 @@
 
         async function loadAllData() {
             try {
+                // 선생님이 만든 평가 계획(문제지 정보)만 가져옵니다. 점수는 가져오지 않습니다.
                 const q = query(collection(db, "grading_plans"), orderBy("createdAt", "desc"));
                 const snapshot = await getDocs(q);
                 allGradingPlans = [];
@@ -263,69 +291,112 @@
 
         window.toggleCard = (cardHeader) => {
             const body = cardHeader.nextElementSibling;
-            const hint = cardHeader.querySelector('.toggle-hint');
             if (body.classList.contains('expanded')) {
-                body.classList.remove('expanded'); hint.innerText = '▼ 입력하기';
+                body.classList.remove('expanded');
             } else {
-                body.classList.add('expanded'); hint.innerText = '▲ 접기';
+                body.classList.add('expanded');
             }
         };
+
+        // 점수 계산 헬퍼 함수
+        function calculatePlanScore(plan) {
+            let totalScore = 0;
+            plan.items.forEach((item, idx) => {
+                // localStorage에서만 읽어옵니다. (DB 사용 X)
+                const savedScore = localStorage.getItem(`score_${plan.id}_${idx}`);
+                const scoreVal = parseFloat(savedScore);
+                if(!isNaN(scoreVal)) {
+                    totalScore += (scoreVal / item.maxScore) * item.ratio;
+                }
+            });
+            return parseFloat(totalScore.toFixed(1));
+        }
 
         window.renderDashboard = () => {
             const year = document.getElementById('yearFilter').value;
             const semester = document.getElementById('semesterFilter').value;
+            const sortMode = document.getElementById('sortFilter').value; // 정렬 옵션
             const container = document.getElementById('subjectsList');
             container.innerHTML = '';
 
-            const filteredPlans = allGradingPlans.filter(plan => {
+            // 1. 학기 필터링
+            let targetPlans = allGradingPlans.filter(plan => {
                 const planYear = plan.academicYear || "2025";
                 const planSem = plan.semester || "1학기";
                 return planYear === year && planSem === semester;
             });
 
-            if (filteredPlans.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">해당 학기의 데이터가 없습니다.</div>';
+            // 2. 점수 미리 계산 (정렬을 위해)
+            targetPlans = targetPlans.map(plan => ({
+                ...plan,
+                currentScore: calculatePlanScore(plan)
+            }));
+
+            // 3. 정렬 로직 적용
+            if (sortMode === 'score') {
+                targetPlans.sort((a, b) => b.currentScore - a.currentScore);
+            } else if (sortMode === 'name') {
+                targetPlans.sort((a, b) => a.subject.localeCompare(b.subject));
+            } else {
+                // 기본 교과표 순서
+                targetPlans.sort((a, b) => {
+                    let idxA = SUBJECT_ORDER.indexOf(a.subject);
+                    let idxB = SUBJECT_ORDER.indexOf(b.subject);
+                    if(idxA === -1) idxA = 999; 
+                    if(idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                });
+            }
+
+            if (targetPlans.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">퀘스트 데이터가 없습니다.</div>';
                 updateChart([], [], []); return;
             }
 
             const chartLabels = []; const chartData = []; const chartColors = [];
 
-            filteredPlans.forEach(plan => {
-                const card = document.createElement('div');
-                card.className = 'subject-card';
-                let inputHtml = ''; let totalScore = 0;
-
-                plan.items.forEach((item, idx) => {
-                    const savedScore = localStorage.getItem(`score_${plan.id}_${idx}`) || "";
-                    const badgeClass = item.type === '지필' ? 'b-ji' : 'b-su';
-                    const scoreVal = parseFloat(savedScore);
-                    if(!isNaN(scoreVal)) totalScore += (scoreVal / item.maxScore) * item.ratio;
-
-                    inputHtml += `
-                        <div class="input-row">
-                            <div class="item-info">
-                                <div class="item-name"><span class="badge ${badgeClass}">${item.type}</span>${item.name}</div>
-                                <div class="item-meta">${item.maxScore}점 만점 / ${item.ratio}% 반영</div>
-                            </div>
-                            <input type="number" class="score-input" data-docid="${plan.id}" data-idx="${idx}" data-max="${item.maxScore}" value="${savedScore}" placeholder="점수" onclick="event.stopPropagation()">
-                        </div>`;
-                });
-
-                const finalScore = totalScore.toFixed(1);
-                const { grade, color } = getGradeInfo(finalScore);
+            targetPlans.forEach(plan => {
+                const finalScore = plan.currentScore;
+                const { label, icon, color } = getRankInfo(finalScore);
 
                 chartLabels.push(plan.subject);
                 chartData.push(finalScore);
                 chartColors.push(color);
 
-                card.style.borderLeftColor = color;
+                // 카드 생성
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                
+                let inputHtml = '';
+                plan.items.forEach((item, idx) => {
+                    const savedScore = localStorage.getItem(`score_${plan.id}_${idx}`) || "";
+                    const badgeClass = item.type === '지필' ? 'b-ji' : 'b-su';
+                    
+                    inputHtml += `
+                        <div class="input-row">
+                            <div class="item-info">
+                                <div class="item-name"><span class="badge-type ${badgeClass}">${item.type}</span>${item.name}</div>
+                                <div class="item-meta">${item.maxScore}점 만점 / ${item.ratio}% 반영</div>
+                            </div>
+                            <input type="number" class="score-input" 
+                                data-docid="${plan.id}" data-idx="${idx}" data-max="${item.maxScore}" 
+                                value="${savedScore}" placeholder="0" onclick="event.stopPropagation()">
+                        </div>`;
+                });
+
                 card.innerHTML = `
+                    <div class="hp-container">
+                        <div class="hp-fill" id="hp_${plan.id}" style="width:${finalScore}%; background-color:${color};"></div>
+                    </div>
                     <div class="card-header" onclick="toggleCard(this)">
-                        <div class="subject-name">${plan.subject}</div>
-                        <div style="display:flex; align-items:center;">
-                            <span class="total-score" id="total_${plan.id}" style="color:${color}">${finalScore}</span>
-                            <span class="grade-pill" id="grade_${plan.id}" style="background-color:${color}">${grade}</span>
-                            <span class="toggle-hint">▼ 입력하기</span>
+                        <div class="subject-info">
+                            <span class="subject-icon">${icon}</span>
+                            <div class="subject-name">${plan.subject}</div>
+                        </div>
+                        <div class="score-display">
+                            <div class="rank-badge" id="badge_${plan.id}" style="background-color:${color}">${label}</div>
+                            <div class="current-score"><span id="score_${plan.id}">${finalScore}</span> HP</div>
+                            <div class="toggle-hint">▼ 점수 입력</div>
                         </div>
                     </div>
                     <div class="card-body">${inputHtml}</div>
@@ -334,46 +405,53 @@
             });
 
             document.querySelectorAll('.score-input').forEach(input => input.addEventListener('input', handleInput));
-            
-            const wrapper = document.querySelector('.chart-scroll-wrapper');
-            if (filteredPlans.length > 5) wrapper.style.width = `${filteredPlans.length * 60}px`;
-            else wrapper.style.width = '100%';
-
             updateChart(chartLabels, chartData, chartColors);
         };
 
+        // 입력 핸들러: DB 저장 절대 안 함. LocalStorage만 사용.
         function handleInput(e) {
             const docId = e.target.dataset.docid;
             const idx = e.target.dataset.idx;
             const max = parseFloat(e.target.dataset.max);
             let val = e.target.value;
+            
             if(val > max) { val = max; e.target.value = max; }
+            if(val < 0) { val = 0; e.target.value = 0; }
+            
+            // ★ 중요: 브라우저 임시 저장소에만 저장
             localStorage.setItem(`score_${docId}_${idx}`, val);
+            
             updateCardScore(docId);
         }
 
         function updateCardScore(docId) {
+            // 현재 화면의 데이터를 다시 계산해서 UI만 업데이트
             const plan = allGradingPlans.find(p => p.id === docId);
             if(!plan) return;
-            let total = 0;
-            plan.items.forEach((item, i) => {
-                const val = parseFloat(localStorage.getItem(`score_${docId}_${i}`));
-                if(!isNaN(val)) total += (val / item.maxScore) * item.ratio;
-            });
-            const final = total.toFixed(1);
-            const { grade, color } = getGradeInfo(final);
             
-            document.getElementById(`total_${docId}`).innerText = final;
-            document.getElementById(`total_${docId}`).style.color = color;
-            const badge = document.getElementById(`grade_${docId}`);
-            badge.innerText = grade;
+            const finalScore = calculatePlanScore(plan);
+            const { label, icon, color } = getRankInfo(finalScore);
+            
+            // UI 업데이트
+            document.getElementById(`score_${docId}`).innerText = finalScore;
+            const badge = document.getElementById(`badge_${docId}`);
+            badge.innerText = label;
             badge.style.backgroundColor = color;
-            badge.closest('.subject-card').style.borderLeftColor = color;
+            
+            const hpBar = document.getElementById(`hp_${docId}`);
+            hpBar.style.width = `${finalScore}%`;
+            hpBar.style.backgroundColor = color;
+            
+            // 아이콘 업데이트 (DOM 탐색 필요)
+            const card = badge.closest('.subject-card');
+            card.querySelector('.subject-icon').innerText = icon;
 
+            // 차트 업데이트
             if(myChart) {
+                // 차트 레이블이 정렬 상태에 따라 다를 수 있으므로 인덱스 찾기 주의
                 const dataIndex = myChart.data.labels.indexOf(plan.subject);
                 if(dataIndex !== -1) {
-                    myChart.data.datasets[0].data[dataIndex] = final;
+                    myChart.data.datasets[0].data[dataIndex] = finalScore;
                     myChart.data.datasets[0].backgroundColor[dataIndex] = color;
                     myChart.update();
                 }
@@ -387,11 +465,14 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{ label: '환산 점수', data: data, backgroundColor: colors, borderWidth: 1, borderRadius: 5 }]
+                    datasets: [{ label: '전투력(점수)', data: data, backgroundColor: colors, borderWidth: 0, borderRadius: 6 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 100, ticks:{font:{size:10}} }, x: { ticks:{font:{size:11}} } },
+                    scales: { 
+                        y: { beginAtZero: true, max: 100, display: false }, 
+                        x: { ticks:{font:{size:11, weight:'bold'}} } 
+                    },
                     plugins: { legend: { display: false } }
                 }
             });
