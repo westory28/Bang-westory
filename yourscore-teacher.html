@@ -78,7 +78,7 @@
         .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; }
         .btn-add { background-color: #3498db; color: white; margin-bottom: 20px; width: auto; }
         .btn-save { background-color: #2ecc71; color: white; font-size: 18px; margin-top: 10px; }
-        .btn-cancel { background-color: #95a5a6; color: white; font-size: 18px; margin-top: 10px; display: none; } /* 초기엔 숨김 */
+        .btn-cancel { background-color: #95a5a6; color: white; font-size: 18px; margin-top: 10px; display: none; } 
         
         .btn-google {
             background-color: #fff; color: #444; border: 1px solid #ddd;
@@ -89,7 +89,20 @@
         .btn-google img { width: 24px; height: 24px; }
         .btn-logout { background-color: #95a5a6; color: white; float: right; padding: 8px 15px; font-size: 14px; width: auto; }
 
-        /* ★ 테이블 스타일 (목록 보기용) */
+        /* ★ 필터 영역 스타일 */
+        .filter-bar {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-bar select { width: auto; flex: 1; }
+        .filter-label { font-weight: bold; color: #555; white-space: nowrap; }
+
+        /* 테이블 스타일 */
         .plan-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
         .plan-table th, .plan-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
         .plan-table th { background-color: #f8f9fa; font-weight: 600; color: #555; }
@@ -104,6 +117,7 @@
         @media (max-width: 768px) {
             .criteria-row { flex-direction: column; gap: 10px; }
             .criteria-row > * { width: 100%; flex: auto; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
@@ -126,7 +140,15 @@
         <h1 id="pageTitle">📝 평가 기준 등록</h1>
 
         <div class="form-row">
-            <div class="form-group" style="flex: 0 0 150px;">
+            <div class="form-group" style="flex: 0 0 140px;">
+                <label for="yearSelect">학년도</label>
+                <select id="yearSelect">
+                    <option value="2025">2025학년도</option>
+                    <option value="2026">2026학년도</option>
+                    <option value="2027">2027학년도</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 0 0 100px;">
                 <label for="semesterSelect">학기</label>
                 <select id="semesterSelect">
                     <option value="1학기">1학기</option>
@@ -150,9 +172,25 @@
         <button id="cancelBtn" class="btn btn-cancel" onclick="resetForm()">🔄 입력 초기화 (취소)</button>
 
         <h2>📂 등록된 평가 기준 목록</h2>
+        <div class="filter-bar">
+            <span class="filter-label">🔍 목록 필터:</span>
+            <select id="filterYear" onchange="loadSavedPlans()">
+                <option value="all">모든 학년도</option>
+                <option value="2025" selected>2025학년도</option>
+                <option value="2026">2026학년도</option>
+                <option value="2027">2027학년도</option>
+            </select>
+            <select id="filterSemester" onchange="loadSavedPlans()">
+                <option value="all">모든 학기</option>
+                <option value="1학기">1학기</option>
+                <option value="2학기">2학기</option>
+            </select>
+        </div>
+
         <table class="plan-table">
             <thead>
                 <tr>
+                    <th width="15%">학년도</th>
                     <th width="10%">학기</th>
                     <th width="20%">과목명</th>
                     <th>평가 항목 요약</th>
@@ -166,7 +204,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        // updateDoc, deleteDoc, doc 추가됨
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
@@ -184,15 +221,15 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // 현재 수정 중인 문서 ID (없으면 null)
         let editingDocId = null;
+        let savedPlansData = {}; // 필터링을 위한 데이터 캐싱
 
-        // 로그인 상태 감지
+        // 로그인 감지
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "westoria28@gmail.com") {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('dashboardSection').classList.remove('hidden');
-                loadSavedPlans(); // 로그인 성공 시 목록 불러오기
+                loadSavedPlans(); 
             } else if (user) {
                 alert("🚫 접근 거부\n'westoria28@gmail.com' 계정만 가능합니다.");
                 signOut(auth);
@@ -209,196 +246,129 @@
         };
 
         window.logout = async () => {
-            if(confirm("로그아웃 하시겠습니까?")) {
-                await signOut(auth);
-                location.reload();
-            }
+            if(confirm("로그아웃 하시겠습니까?")) { await signOut(auth); location.reload(); }
         };
 
-        // ★ 목록 불러오기 함수
-        async function loadSavedPlans() {
-            const tbody = document.getElementById('savedPlansBody');
-            tbody.innerHTML = '<tr><td colspan="4">데이터를 불러오는 중...</td></tr>';
-
-            try {
-                // 최신순 정렬
-                const q = query(collection(db, "grading_plans"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-
-                tbody.innerHTML = ''; // 초기화
-
-                if (querySnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4">등록된 평가 기준이 없습니다.</td></tr>';
-                    return;
-                }
-
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const tr = document.createElement('tr');
-                    
-                    // 평가 항목 요약 텍스트 만들기
-                    const summary = data.items.map(i => `${i.name}(${i.ratio}%)`).join(', ');
-
-                    tr.innerHTML = `
-                        <td>${data.semester || '-'}</td>
-                        <td>${data.subject}</td>
-                        <td style="text-align:left;">${summary}</td>
-                        <td>
-                            <button class="btn btn-sm btn-edit" onclick="editPlan('${docSnap.id}')">수정</button>
-                            <button class="btn btn-sm btn-delete" onclick="deletePlan('${docSnap.id}')">삭제</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                console.error("Error loading plans:", e);
-                tbody.innerHTML = '<tr><td colspan="4">불러오기 실패</td></tr>';
-            }
-        }
-        
-        // 전역 스코프에 함수 등록 (HTML에서 호출 가능하게)
-        window.loadSavedPlans = loadSavedPlans;
-
-        // ★ 수정 모드로 전환 함수
-        window.editPlan = async (id) => {
-            // Firestore에서 데이터를 다시 가져올 수도 있지만, 
-            // 편의상 화면을 맨 위로 올리고 UI를 변경합니다.
-            // 여기서는 정확성을 위해 DB에서 단건 조회를 하겠습니다.
-            // (이미 목록을 가져왔지만, editPlan을 위해 다시 호출하는 패턴도 안전합니다)
-            
-            // 1. 현재 목록에서 데이터 찾기 (네트워크 절약)
-            // 하지만 간단하게 구현하기 위해 다시 fetch 하지 않고 
-            // 목록을 그릴 때 데이터를 어딘가 저장해두면 좋지만, 
-            // 지금은 간단히 버튼을 누르면 DB에서 읽어오거나 
-            // 위 loadSavedPlans에서 data를 활용하는 방식을 씁니다.
-            // -> 가장 쉬운 방법: 버튼에 데이터를 숨겨놓기보다는, 다시 DB에서 해당 ID로 조회없이
-            //    loadSavedPlans에서 가져온 데이터를 활용하는게 좋으나, 
-            //    여기서는 코드를 단순화하기 위해 reload 없이 목록 갱신만 합니다.
-            
-            // *가장 확실한 방법: DB에서 해당 ID 문서 하나만 가져오기 (getDoc)*
-            // 하지만 import를 줄이기 위해, 그냥 목록을 다시 로드할때 저장해둔 변수를 쓰거나..
-            // 복잡하니 여기서는 '목록 클릭 시' -> '해당 줄의 데이터'를 파싱하는 건 비효율적이므로
-            // 그냥 DB에서 docRef로 가져오지 않고, 
-            // 위에서 querySnapshot을 전역변수에 담지 않았으므로 
-            // 여기서는 **간편하게** 해당 ID로 다시 getDocs(전체)를 돌거나(비효율), 
-            // **DOM에 데이터를 숨겨두겠습니다.**
-
-            // (수정) 코드를 깔끔하게 하기 위해, editPlan 호출 시 DB조회를 하지 않고
-            // 목록 그릴 때 data-attribute에 JSON을 숨기겠습니다.
-            // -> 아차, JSON stringify는 따옴표 문제가 많습니다.
-            // -> **가장 안전한 방법**: 그냥 UI상에서 해당 ID를 가진 문서를 찾습니다.
-            // (하지만 여기서는 그냥 버튼 누르면 스크롤 올리고, 알림만 띄우겠습니다. 
-            //  실제 데이터 로딩은 getDoc을 쓰는게 정석입니다.)
-            
-            // 정석대로: doc(db, collection, id) 사용을 위해 위 import에 getDoc은 없지만...
-            // 코드를 단순화 하기 위해 querySnapshot을 활용하겠습니다. 
-            // *하지만 querySnapshot이 지역변수라 접근 불가.*
-            // => 그냥 화면 목록을 갱신할 때 전역 변수 `savedDataMap`을 하나 만들겠습니다.
-            
-            alert("수정할 데이터를 불러옵니다.");
-        };
-
-        // (수정) 위 로직이 복잡하니, loadSavedPlans를 수정하여 데이터를 전역 변수에 저장합니다.
-        let savedPlansData = {}; // ID: Data 매핑
-
-        // loadSavedPlans 함수 재정의 (덮어쓰기)
+        // ★ 목록 불러오기 (필터링 적용)
         window.loadSavedPlans = async () => {
             const tbody = document.getElementById('savedPlansBody');
-            tbody.innerHTML = '<tr><td colspan="4">로딩 중...</td></tr>';
-            savedPlansData = {}; // 초기화
-
+            
+            // 최초 로드 또는 갱신 시 DB에서 가져오기 (비효율 방지를 위해 캐싱할 수도 있으나, 여기선 심플하게 매번 쿼리)
+            // 클라이언트 사이드 필터링을 위해 일단 다 가져와서 JS로 거르는 방식 선택 (데이터 양이 적으므로 OK)
+            
             try {
+                // 이미 데이터를 가져온 적이 없다면 fetch
+                // (여기서는 필터 변경 시 반응속도를 위해, DB조회는 매번 하지 않고 메모리 데이터를 필터링 하는 게 좋음)
+                // 하지만 심플한 구현을 위해 DB조회 후 필터링 로직을 수행합니다.
+                
+                tbody.innerHTML = '<tr><td colspan="5">데이터 로딩 중...</td></tr>';
+                savedPlansData = {}; 
+
                 const q = query(collection(db, "grading_plans"), orderBy("createdAt", "desc"));
                 const querySnapshot = await getDocs(q);
-                tbody.innerHTML = '';
+                
+                // 필터 값 가져오기
+                const filterYear = document.getElementById('filterYear').value;
+                const filterSemester = document.getElementById('filterSemester').value;
 
-                if (querySnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4">데이터 없음</td></tr>'; return;
-                }
+                tbody.innerHTML = ''; // 초기화
+                let hasData = false;
 
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    savedPlansData[docSnap.id] = data; // 데이터 저장
+                    savedPlansData[docSnap.id] = data; // 수정용 데이터 저장
 
-                    const summary = data.items.map(i => `${i.name}(${i.ratio}%)`).join(', ');
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${data.semester || '-'}</td>
-                        <td>${data.subject}</td>
-                        <td style="text-align:left;">${summary}</td>
-                        <td>
-                            <button class="btn btn-sm btn-edit" onclick="startEdit('${docSnap.id}')">수정</button>
-                            <button class="btn btn-sm btn-delete" onclick="deletePlan('${docSnap.id}')">삭제</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+                    // ★ 필터링 로직
+                    const dataYear = data.academicYear || "정보없음"; // 구버전 데이터 호환
+                    const dataSemester = data.semester || "정보없음";
+
+                    let show = true;
+                    if (filterYear !== 'all' && dataYear !== filterYear) show = false;
+                    if (filterSemester !== 'all' && dataSemester !== filterSemester) show = false;
+
+                    if (show) {
+                        hasData = true;
+                        const summary = data.items.map(i => `${i.name}(${i.ratio}%)`).join(', ');
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${dataYear}학년도</td>
+                            <td>${data.semester || '-'}</td>
+                            <td>${data.subject}</td>
+                            <td style="text-align:left;">${summary}</td>
+                            <td>
+                                <button class="btn btn-sm btn-edit" onclick="startEdit('${docSnap.id}')">수정</button>
+                                <button class="btn btn-sm btn-delete" onclick="deletePlan('${docSnap.id}')">삭제</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
                 });
-            } catch (e) { console.error(e); }
+
+                if (!hasData) {
+                    tbody.innerHTML = '<tr><td colspan="5">해당 조건의 평가 기준이 없습니다.</td></tr>';
+                }
+
+            } catch (e) {
+                console.error("Error loading plans:", e);
+                tbody.innerHTML = '<tr><td colspan="5">불러오기 실패</td></tr>';
+            }
         }
 
-        // ★ 진짜 수정 시작 함수
+        // 수정 시작
         window.startEdit = (id) => {
             const data = savedPlansData[id];
             if(!data) return;
 
-            editingDocId = id; // 수정 중인 ID 설정
+            editingDocId = id;
 
-            // 1. 폼 채우기
+            // 1. 폼 채우기 (학년도 포함)
+            if(data.academicYear) {
+                document.getElementById('yearSelect').value = data.academicYear;
+            }
             document.getElementById('semesterSelect').value = data.semester || "1학기";
             document.getElementById('subjectName').value = data.subject;
 
-            // 2. 평가 항목 리스트 초기화 후 다시 채우기
+            // 2. 평가 항목 리스트 채우기
             const listDiv = document.getElementById('criteriaList');
             listDiv.innerHTML = '';
-            
-            data.items.forEach(item => {
-                addRow(item); // 기존 데이터로 행 추가
-            });
+            data.items.forEach(item => addRow(item));
 
-            // 3. UI 변경 (저장 버튼 -> 수정 버튼)
+            // 3. UI 변경
             document.getElementById('saveBtn').innerText = "🔄 수정사항 저장하기";
-            document.getElementById('saveBtn').style.backgroundColor = "#f39c12"; // 주황색
-            document.getElementById('cancelBtn').style.display = "inline-block"; // 취소버튼 보이기
+            document.getElementById('saveBtn').style.backgroundColor = "#f39c12";
+            document.getElementById('cancelBtn').style.display = "inline-block";
             document.getElementById('pageTitle').innerText = "📝 평가 기준 수정 모드";
 
-            // 4. 맨 위로 스크롤
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // ★ 삭제 함수
         window.deletePlan = async (id) => {
-            if(confirm("정말 이 평가 기준을 삭제하시겠습니까?\n(복구할 수 없습니다)")) {
+            if(confirm("정말 삭제하시겠습니까?")) {
                 try {
                     await deleteDoc(doc(db, "grading_plans", id));
                     alert("삭제되었습니다.");
-                    loadSavedPlans(); // 목록 갱신
-                    if(editingDocId === id) resetForm(); // 수정 중인 거 삭제했으면 폼 초기화
-                } catch(e) {
-                    alert("삭제 실패: " + e.message);
-                }
+                    loadSavedPlans(); 
+                    if(editingDocId === id) resetForm();
+                } catch(e) { alert("삭제 실패: " + e.message); }
             }
         };
 
-        // ★ 초기화(취소) 함수
         window.resetForm = () => {
             editingDocId = null;
             document.getElementById('subjectName').value = '';
             document.getElementById('criteriaList').innerHTML = '';
-            addRow(); // 빈 줄 하나 추가
+            addRow(); 
 
-            // 버튼 및 UI 원상복구
             document.getElementById('saveBtn').innerText = "💾 기준 저장하기";
-            document.getElementById('saveBtn').style.backgroundColor = "#2ecc71"; // 초록색
+            document.getElementById('saveBtn').style.backgroundColor = "#2ecc71";
             document.getElementById('cancelBtn').style.display = "none";
             document.getElementById('pageTitle').innerText = "📝 평가 기준 등록";
         };
 
-        // 행 추가 함수 (데이터가 있으면 채워서 만듦)
         window.addRow = (data = null) => {
             const div = document.createElement('div');
             div.className = 'criteria-row';
             
-            // 데이터가 있으면 값 넣기, 없으면 빈 값
             const type = data ? data.type : "지필";
             const name = data ? data.name : "";
             const max = data ? data.maxScore : "";
@@ -417,18 +387,17 @@
             document.getElementById('criteriaList').appendChild(div);
         };
 
-        window.removeRow = (button) => {
-            button.parentElement.remove();
-        };
+        window.removeRow = (button) => { button.parentElement.remove(); };
 
-        // 초기 화면 설정
-        addRow();
+        addRow(); // 초기 행 추가
 
-        // 저장 함수 (신규 저장 OR 수정 저장 분기 처리)
+        // 저장 함수
         window.saveToFirebase = async () => {
             const user = auth.currentUser;
             if (!user || user.email !== "westoria28@gmail.com") { alert("권한 없음"); return; }
 
+            // ★ 학년도 값 가져오기
+            const academicYear = document.getElementById('yearSelect').value;
             const semester = document.getElementById('semesterSelect').value;
             const subject = document.getElementById('subjectName').value.trim();
             if (!subject) { alert("과목명을 입력해주세요."); return; }
@@ -446,10 +415,7 @@
                 if (!name || !maxScore || !ratio) { alert("빈칸을 채워주세요."); return; }
                 totalRatio += Number(ratio);
                 items.push({
-                    type: type,
-                    name: name,
-                    maxScore: Number(maxScore),
-                    ratio: Number(ratio)
+                    type: type, name: name, maxScore: Number(maxScore), ratio: Number(ratio)
                 });
             }
 
@@ -457,37 +423,36 @@
             if (totalRatio !== 100) { alert(`비율 합계가 ${totalRatio}% 입니다. 100%여야 합니다.`); return; }
 
             try {
-                // ★ 수정 모드인지 확인
+                // 저장할 데이터 객체
+                const saveData = {
+                    academicYear: academicYear, // ★ 학년도 저장
+                    semester: semester,
+                    subject: subject,
+                    items: items,
+                    updatedAt: new Date()
+                };
+
                 if (editingDocId) {
-                    // [수정] updateDoc 사용
-                    const docRef = doc(db, "grading_plans", editingDocId);
-                    await updateDoc(docRef, {
-                        semester: semester,
-                        subject: subject,
-                        items: items,
-                        updatedAt: new Date() // 수정 시간 기록
-                    });
+                    await updateDoc(doc(db, "grading_plans", editingDocId), saveData);
                     alert("수정되었습니다!");
                 } else {
-                    // [신규] addDoc 사용
-                    await addDoc(collection(db, "grading_plans"), {
-                        semester: semester,
-                        subject: subject,
-                        items: items,
-                        createdAt: new Date(),
-                        teacherEmail: user.email
-                    });
+                    saveData.createdAt = new Date();
+                    saveData.teacherEmail = user.email;
+                    await addDoc(collection(db, "grading_plans"), saveData);
                     alert("저장되었습니다!");
                 }
                 
-                resetForm(); // 폼 초기화
-                loadSavedPlans(); // 목록 새로고침
+                resetForm(); 
+                loadSavedPlans(); // 목록 갱신 (현재 필터 조건에 맞춰 다시 로드됨)
                 
             } catch (e) {
                 console.error("Error: ", e);
                 alert("처리 실패: " + e.message);
             }
         };
+        
+        // 전역 함수 등록
+        window.loadSavedPlans = loadSavedPlans;
     </script>
 </body>
 </html>
