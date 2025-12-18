@@ -16,7 +16,7 @@
         }
         .brand-icon { margin-right: 10px; font-size: 22px; }
 
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; } /* 넓은 화면 활용 */
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
 
         /* 타이틀 영역 */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -28,24 +28,16 @@
         .btn-google { background-color: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; font-size: 16px; width: 100%; cursor: pointer; border-radius: 6px; margin-top: 20px; transition: background 0.2s; }
         .btn-google:hover { background-color: #f8f9fa; }
 
-        /* ★ 핵심 레이아웃 (50:50 분할) */
+        /* 레이아웃 (50:50 분할) */
         .dashboard-layout { display: flex; flex-direction: column; gap: 30px; }
-        
-        /* 왼쪽 패널 (입력) */
         .left-panel { display: flex; flex-direction: column; gap: 20px; }
-        
-        /* 오른쪽 패널 (목록) */
-        .right-panel { display: flex; flex-direction: column; gap: 20px; } /* 패널 자체의 갭 */
+        .right-panel { display: flex; flex-direction: column; gap: 20px; }
 
-        /* PC 버전 미디어 쿼리 */
         @media (min-width: 1000px) {
             .dashboard-layout { flex-direction: row; align-items: flex-start; }
-            
-            /* ★ 여기가 수정되었습니다: flex: 1로 1:1 비율 설정 */
             .left-panel { flex: 1; } 
             .right-panel { 
                 flex: 1;
-                /* 오른쪽 패널 스티키 옵션 */
                 height: calc(100vh - 100px); 
                 overflow-y: auto; 
                 position: sticky; top: 20px;
@@ -53,7 +45,7 @@
             }
         }
 
-        /* 1. 초대형 필터 박스 */
+        /* 1. 필터 박스 */
         .big-filter-card {
             background-color: #e3f2fd; border: 2px solid #2196f3; border-radius: 12px; padding: 20px;
             box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
@@ -76,34 +68,55 @@
         }
         input:focus { border-color: #3498db; outline: none; }
 
-        /* 평가 항목 리스트 */
+        /* ★ 평가 항목 리스트 (스타일 수정됨) */
         #criteriaList { background-color: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; }
-        .criteria-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-        .c-type { width: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .c-name { flex: 2; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .c-max { width: 70px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        .c-ratio { width: 70px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        .remove-btn { background: #e74c3c; color: white; border: none; width: 35px; height: 38px; border-radius: 4px; cursor: pointer; }
+        
+        .criteria-row { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 10px; 
+            align-items: center; 
+        }
+        
+        /* 칸 너비 조정 (여기가 핵심!) */
+        .c-type { 
+            flex: 0 0 90px; /* 고정 너비 */
+            padding: 10px; border: 1px solid #ddd; border-radius: 4px; 
+        }
+        .c-name { 
+            flex: 1; /* ★ 남은 공간을 모두 차지함 */
+            min-width: 0; /* 내용이 많아도 레이아웃 깨짐 방지 */
+            padding: 10px; border: 1px solid #ddd; border-radius: 4px; 
+        }
+        .c-max { 
+            flex: 0 0 60px; /* 고정 너비 */
+            padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; 
+        }
+        .c-ratio { 
+            flex: 0 0 60px; /* 고정 너비 */
+            padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; 
+        }
+        .remove-btn { 
+            flex: 0 0 35px; /* 고정 너비 */
+            background: #e74c3c; color: white; border: none; height: 38px; border-radius: 4px; cursor: pointer; 
+        }
 
         .btn-add { background-color: #3498db; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         .btn-save { background-color: #2ecc71; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .btn-cancel { background-color: #95a5a6; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
 
-        /* ★ 3. 목록 카드 (간격 추가됨) */
+        /* 3. 목록 카드 */
         .plan-card { 
             background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             border-left: 5px solid #3498db; display: flex; justify-content: space-between; align-items: center;
             transition: transform 0.2s;
-            margin-bottom: 20px; /* ★ 카드 사이 간격 추가 */
+            margin-bottom: 20px; 
         }
-        .plan-card:last-child { margin-bottom: 0; }
         .plan-card:hover { transform: translateX(5px); }
-        
         .plan-info h3 { margin: 0 0 5px 0; font-size: 18px; color: #333; }
         .plan-meta { font-size: 13px; color: #666; }
         .plan-items { font-size: 13px; color: #555; margin-top: 10px; line-height: 1.6; background: #f9f9f9; padding: 10px; border-radius: 6px; }
         .plan-actions { display: flex; gap: 8px; flex-direction: column; }
-        
         .btn-sm { padding: 8px 12px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn-edit { background-color: #f39c12; }
         .btn-delete { background-color: #e74c3c; }
@@ -139,7 +152,6 @@
             <div class="dashboard-layout">
                 
                 <div class="left-panel">
-                    
                     <div class="big-filter-card">
                         <div class="filter-header">📌 Step 1. 학년도와 학기를 선택하세요</div>
                         <div class="filter-row">
@@ -176,8 +188,7 @@
 
                 <div class="right-panel">
                     <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
-                    <div id="savedPlansList">
-                        </div>
+                    <div id="savedPlansList"></div>
                 </div>
 
             </div>
@@ -224,9 +235,7 @@
         window.loginWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { console.error(e); alert("로그인 오류"); } };
         window.logout = async () => { if(confirm("로그아웃 하시겠습니까?")) { await signOut(auth); location.reload(); } };
 
-        window.handleFilterChange = () => {
-            renderPlansList();
-        };
+        window.handleFilterChange = () => { renderPlansList(); };
 
         async function loadSavedPlans() {
             const listDiv = document.getElementById('savedPlansList');
@@ -237,23 +246,16 @@
                 const querySnapshot = await getDocs(q);
                 
                 allPlansData = [];
-                querySnapshot.forEach(doc => {
-                    allPlansData.push({ id: doc.id, ...doc.data() });
-                });
-
+                querySnapshot.forEach(doc => { allPlansData.push({ id: doc.id, ...doc.data() }); });
                 renderPlansList();
 
-            } catch (e) {
-                console.error("Error:", e);
-                listDiv.innerHTML = '<div class="empty-msg">데이터 로드 실패</div>';
-            }
+            } catch (e) { console.error("Error:", e); listDiv.innerHTML = '<div class="empty-msg">데이터 로드 실패</div>'; }
         }
 
         function renderPlansList() {
             const year = document.getElementById('yearFilter').value;
             const semester = document.getElementById('semesterFilter').value;
             const listDiv = document.getElementById('savedPlansList');
-            
             listDiv.innerHTML = '';
 
             const filtered = allPlansData.filter(plan => {
@@ -263,14 +265,13 @@
             });
 
             if (filtered.length === 0) {
-                listDiv.innerHTML = '<div class="empty-msg">등록된 평가 기준이 없습니다.<br>왼쪽에서 새로 등록해보세요!</div>';
+                listDiv.innerHTML = '<div class="empty-msg">등록된 기준이 없습니다.<br>새로 등록해보세요!</div>';
                 return;
             }
 
             filtered.forEach(data => {
                 const card = document.createElement('div');
                 card.className = 'plan-card';
-                
                 const summary = data.items.map(i => `<span style="display:inline-block; margin-right:5px; color:#555;">• ${i.name}(${i.ratio}%)</span>`).join('');
 
                 card.innerHTML = `
@@ -291,12 +292,10 @@
         window.startEdit = (id) => {
             const data = allPlansData.find(p => p.id === id);
             if(!data) return;
-
             editingDocId = id;
 
             if(data.academicYear) document.getElementById('yearFilter').value = data.academicYear;
             document.getElementById('semesterFilter').value = data.semester || "1학기";
-            
             renderPlansList();
 
             document.getElementById('subjectName').value = data.subject;
@@ -313,7 +312,7 @@
         };
 
         window.deletePlan = async (id) => {
-            if(confirm("정말 삭제하시겠습니까?\n복구할 수 없습니다.")) {
+            if(confirm("정말 삭제하시겠습니까?")) {
                 try {
                     await deleteDoc(doc(db, "grading_plans", id));
                     allPlansData = allPlansData.filter(p => p.id !== id);
@@ -328,7 +327,6 @@
             document.getElementById('subjectName').value = '';
             document.getElementById('criteriaList').innerHTML = '';
             addRow(); 
-
             document.getElementById('saveBtn').innerText = "💾 기준 저장하기";
             document.getElementById('saveBtn').style.backgroundColor = "#2ecc71";
             document.getElementById('cancelBtn').style.display = "none";
@@ -364,7 +362,6 @@
             const academicYear = document.getElementById('yearFilter').value;
             const semester = document.getElementById('semesterFilter').value;
             const subject = document.getElementById('subjectName').value.trim();
-            
             if (!subject) { alert("과목명을 입력해주세요."); return; }
 
             const rows = document.querySelectorAll('.criteria-row');
@@ -376,7 +373,6 @@
                 const name = row.querySelector('.c-name').value.trim();
                 const maxScore = row.querySelector('.c-max').value;
                 const ratio = row.querySelector('.c-ratio').value;
-
                 if (!name || !maxScore || !ratio) { alert("빈칸을 채워주세요."); return; }
                 totalRatio += Number(ratio);
                 items.push({ type, name, maxScore: Number(maxScore), ratio: Number(ratio) });
@@ -386,11 +382,7 @@
             if (totalRatio !== 100) { alert(`비율 합계가 ${totalRatio}% 입니다. 100%를 맞춰주세요.`); return; }
 
             try {
-                const saveData = {
-                    academicYear, semester, subject, items,
-                    updatedAt: new Date()
-                };
-
+                const saveData = { academicYear, semester, subject, items, updatedAt: new Date() };
                 if (editingDocId) {
                     await updateDoc(doc(db, "grading_plans", editingDocId), saveData);
                     const idx = allPlansData.findIndex(p => p.id === editingDocId);
@@ -403,14 +395,8 @@
                     allPlansData.unshift({ id: docRef.id, ...saveData });
                     alert("저장되었습니다!");
                 }
-                
-                resetForm(); 
-                renderPlansList();
-                
-            } catch (e) {
-                console.error("Error:", e);
-                alert("저장 실패: " + e.message);
-            }
+                resetForm(); renderPlansList();
+            } catch (e) { console.error("Error:", e); alert("저장 실패: " + e.message); }
         };
     </script>
 </body>
