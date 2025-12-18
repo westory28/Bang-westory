@@ -45,7 +45,7 @@
             }
         }
 
-        /* 1. 필터 박스 */
+        /* 1. 필터 박스 (왼쪽) */
         .big-filter-card {
             background-color: #e3f2fd; border: 2px solid #2196f3; border-radius: 12px; padding: 20px;
             box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
@@ -53,7 +53,7 @@
         .filter-header { font-size: 16px; font-weight: bold; color: #1565c0; margin-bottom: 10px; }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
         .filter-row select { 
-            flex: 1; min-width: 120px; padding: 12px; font-size: 16px; border: 1px solid #90caf9; 
+            flex: 1; min-width: 100px; padding: 12px; font-size: 16px; border: 1px solid #90caf9; 
             border-radius: 8px; background: white; font-weight: bold; cursor: pointer;
         }
 
@@ -82,7 +82,23 @@
         .btn-save { background-color: #2ecc71; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .btn-cancel { background-color: #95a5a6; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
 
-        /* 3. 목록 카드 */
+        /* 3. 목록 카드 및 헤더 (오른쪽 패널) */
+        .list-header { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; 
+        }
+        
+        /* 옮겨진 정렬 필터 스타일 */
+        .sort-select {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ffcc80;
+            background-color: #fff3e0;
+            border-radius: 6px;
+            color: #e65100;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         .plan-card { 
             background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             border-left: 5px solid #3498db; display: flex; justify-content: space-between; align-items: center;
@@ -149,12 +165,7 @@
                                 <option value="2학년">2학년</option>
                                 <option value="3학년">3학년</option>
                             </select>
-                            <select id="sortFilter" onchange="handleFilterChange()" style="background-color: #fff3e0; border-color: #ffcc80;">
-                                <option value="custom">교과 기본순 (국영수...)</option>
-                                <option value="name">과목 가나다순 (ㄱ-ㅎ)</option>
-                                <option value="latest">최신 등록순</option>
-                            </select>
-                        </div>
+                            </div>
                     </div>
 
                     <div class="input-card">
@@ -177,7 +188,15 @@
                 </div>
 
                 <div class="right-panel">
-                    <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
+                    <div class="list-header">
+                        <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
+                        <select id="sortFilter" class="sort-select" onchange="handleFilterChange()">
+                            <option value="custom">교과 기본순 (국영수...)</option>
+                            <option value="name">과목 가나다순 (ㄱ-ㅎ)</option>
+                            <option value="latest">최신 등록순</option>
+                        </select>
+                    </div>
+                    
                     <div id="savedPlansList"></div>
                 </div>
 
@@ -207,7 +226,7 @@
         let editingDocId = null;
         let allPlansData = [];
 
-        // ★ 교과목 우선순위 정의 (학교 현장 표준)
+        // 교과목 우선순위 정의 (국영수사과역...)
         const subjectPriority = {
             "국어": 1, "영어": 2, "수학": 3, 
             "사회": 4, "역사": 5, "한국사": 5, 
@@ -255,7 +274,7 @@
             const year = document.getElementById('yearFilter').value;
             const semester = document.getElementById('semesterFilter').value;
             const grade = document.getElementById('gradeFilter').value;
-            const sortType = document.getElementById('sortFilter').value; // ★ 정렬 값
+            const sortType = document.getElementById('sortFilter').value; // 정렬 값
             
             const listDiv = document.getElementById('savedPlansList');
             listDiv.innerHTML = '';
@@ -274,18 +293,17 @@
                     // 가나다순
                     return a.subject.localeCompare(b.subject);
                 } else if (sortType === 'custom') {
-                    // 교과 기본순 (국영수...)
+                    // 교과 기본순
                     const scoreA = subjectPriority[a.subject] || 999;
                     const scoreB = subjectPriority[b.subject] || 999;
                     
                     if (scoreA !== scoreB) {
                         return scoreA - scoreB;
                     } else {
-                        // 우선순위 같으면(기타 과목 등) 가나다순
                         return a.subject.localeCompare(b.subject);
                     }
                 } else {
-                    // 최신 등록순 (기본값)
+                    // 최신 등록순
                     const timeA = a.createdAt ? a.createdAt.seconds : 0;
                     const timeB = b.createdAt ? b.createdAt.seconds : 0;
                     return timeB - timeA;
@@ -327,7 +345,7 @@
             document.getElementById('semesterFilter').value = data.semester || "1학기";
             document.getElementById('gradeFilter').value = data.grade || "1학년";
             
-            renderPlansList(); // 필터 바뀐것 반영
+            renderPlansList();
 
             document.getElementById('subjectName').value = data.subject;
             const listDiv = document.getElementById('criteriaList');
