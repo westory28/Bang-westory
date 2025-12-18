@@ -15,15 +15,30 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; }
         
-        /* 네비게이션 메뉴 호버 효과 */
-        .nav-link { position: relative; color: #6b7280; font-weight: 500; text-decoration: none; }
+        /* [공통 헤더 가이드라인 적용] */
+        /* 헤더 고정 스타일 */
+        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
+        
+        /* 네비게이션 컨테이너 */
+        .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* 네비게이션 링크 */
+        .header-nav { display: flex; height: 100%; gap: 1.5rem; }
+        .nav-link { font-weight: 500; color: #6b7280; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
         .nav-link:hover { color: #111827; }
-        .nav-link.active { color: #2563eb; font-weight: bold; }
-        .nav-link.active::after {
-            content: ''; position: absolute; width: 100%; height: 3px;
-            bottom: -22px; left: 0; background-color: #2563eb;
-        }
+        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
+        
+        /* 로고 */
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; }
+        .logo-we { color: #2563eb; }
+        .logo-story { color: #f59e0b; }
 
+        /* 로그아웃 버튼 */
+        .btn-logout-text { color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .btn-logout-text:hover { color: #292524; background-color: #f5f5f4; }
+
+
+        /* [기존 페이지 스타일 유지] */
         /* 리스트 아이템 스타일 (성적표 바 형태) */
         .list-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -50,19 +65,19 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="text-2xl font-black tracking-tighter cursor-pointer" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
-                <span class="text-blue-600">We</span><span class="text-amber-500">story</span>
+    <header>
+        <div class="header-container">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
+                <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
-
-            <nav class="hidden md:flex gap-8 h-full items-center">
-                <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link active h-full flex items-center">역사 퀴즈</a>
-                <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-link h-full flex items-center">학습 기록</a>
-                <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-link h-full flex items-center">나의 성적표</a>
+    
+            <nav class="header-nav">
+                <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link active">역사 퀴즈</a>
+                <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-link">학습 기록</a>
+                <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-link">나의 성적표</a>
             </nav>
-
-            <button onclick="logout()" class="text-stone-500 hover:text-stone-800 font-bold text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition">
+    
+            <button onclick="logout()" class="btn-logout-text">
                 로그아웃
             </button>
         </div>
@@ -166,7 +181,6 @@
 
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) { 
-                // 로그인 안된 경우 로그인 페이지로 이동
                 location.href = 'https://westory28.github.io/Bang-westory/index-test.html'; 
             }
         });
