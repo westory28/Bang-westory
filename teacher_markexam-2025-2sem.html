@@ -328,7 +328,7 @@
                 document.getElementById('total-count').innerText = count;
             },
 
-            // --- [핵심] DB 저장 로직 ---
+// --- DB 저장 로직 (mark_exam_2025-2 컬렉션 사용) ---
             saveToDB: function() {
                 // 유효성 검사
                 if(this.data.objective.length === 0 && this.data.subjective.length === 0) {
@@ -339,16 +339,16 @@
                     objective: this.data.objective,
                     subjective: this.data.subjective,
                     totalScore: parseInt(document.getElementById('total-score').innerText),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    description: "2025학년도 2학기 역사 시험 채점 기준" 
                 };
 
-                // 여기서 DB에 저장합니다. (컬렉션 이름은 'exam_config' 등으로 가정)
-                // 실제 구현 시에는 학년/학기 등의 ID가 필요할 수 있습니다.
-                console.log("저장할 데이터:", saveData);
-                
-                db.collection("exam_config").doc("current_exam").set(saveData)
+                // ★수정됨★: 'mark_exam_2025-2' 컬렉션에 저장
+                // 문서를 하나로 고정('final_exam')하여 덮어쓰기 되도록 설정했습니다.
+                // (필요 시 날짜 등을 넣어 버전을 나눌 수 있습니다)
+                db.collection("mark_exam_2025-2").doc("final_exam").set(saveData)
                     .then(() => {
-                        alert("✅ 채점 기준 및 정답이 DB에 저장되었습니다.\n학생들이 이 기준표를 불러와 채점할 수 있습니다.");
+                        alert("✅ [mark_exam_2025-2] 보관함에 저장되었습니다!");
                     })
                     .catch((error) => {
                         console.error("Error writing document: ", error);
