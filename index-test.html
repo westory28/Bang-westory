@@ -5,105 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Westory: 우리들의 이야기</title>
     <style>
-        /* 기본 스타일 초기화 및 폰트 설정 */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background-color: #f8f9fa; color: #1c1e21; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8f9fa; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* 헤더 스타일 */
-        header { background: #fff; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
-        .logo { font-size: 24px; font-weight: 800; color: #1877f2; text-decoration: none; }
+        /* 1. 로그인 전/후 화면 전환용 스타일 */
+        .hidden { display: none !important; }
         
-        /* 메인 컨테이너 */
-        .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; text-align: center; }
-        
-        /* 히어로 섹션 텍스트 */
-        h1 { font-size: 40px; margin-bottom: 16px; font-weight: 700; }
-        p.subtitle { font-size: 18px; color: #606770; margin-bottom: 60px; line-height: 1.5; }
-        
-        /* 카드 그리드 레이아웃 (Meta 스타일) */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; text-align: left; }
-        
-        /* 개별 카드 디자인 */
-        .card { 
-            background: #fff; 
-            border: 1px solid #dadde1; 
-            border-radius: 12px; 
-            padding: 32px; 
-            transition: transform 0.2s, box-shadow 0.2s; 
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
+        /* 2. 로그인 화면 (정중앙 배치) */
+        #login-view { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .brand-title { font-size: 3rem; font-weight: 800; color: #1c1e21; margin-bottom: 0.5rem; }
+        .brand-subtitle { font-size: 1.5rem; color: #606770; margin-bottom: 3rem; font-weight: 500; }
+        .google-btn { 
+            background: #fff; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 40px; 
+            font-size: 16px; font-weight: 600; color: #3c4043; cursor: pointer; display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;
         }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
-        
-        /* 아이콘 영역 (임시 이모지 사용) */
-        .icon { font-size: 32px; margin-bottom: 20px; display: inline-block; padding: 12px; background: #e7f3ff; border-radius: 50%; }
-        
-        /* 카드 텍스트 */
-        .card h3 { font-size: 20px; margin-bottom: 10px; font-weight: 600; }
-        .card p { font-size: 14px; color: #606770; line-height: 1.4; }
+        .google-btn:hover { background: #f7f8f8; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
 
-        /* 반응형 */
-        @media (max-width: 768px) {
-            h1 { font-size: 28px; }
-            .grid { grid-template-columns: 1fr; }
+        /* 3. 메인 메뉴 화면 (로그인 후) */
+        #main-view { max-width: 1000px; margin: 60px auto; padding: 0 20px; width: 100%; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .user-info { font-size: 16px; color: #606770; }
+        
+        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .menu-card {
+            background: white; border-radius: 16px; padding: 40px 30px; text-align: center; text-decoration: none; color: inherit;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee;
         }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #1877f2; }
+        .emoji-icon { font-size: 48px; margin-bottom: 20px; display: block; }
+        .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+        .card-desc { color: #606770; font-size: 15px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="#" class="logo">Westory</a>
-        <nav>
-            </nav>
-    </header>
+    <div id="login-view">
+        <div class="brand-title">Westory</div>
+        <div class="brand-subtitle">: 우리들의 이야기</div>
+        <button class="google-btn" onclick="handleLogin()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt="G">
+            Google 계정으로 시작하기
+        </button>
+    </div>
 
-    <div class="container">
-        <h1>아이들에게 역사를 더 가깝게</h1>
-        <p class="subtitle">
-            Westory는 사실에 기반한 역사 학습과 평가를 지원합니다.<br>
-            학생과 교사, 모두를 위한 도구를 선택하세요.
-        </p>
+    <div id="main-view" class="hidden">
+        <div class="header-bar">
+            <h2 style="margin:0;">반갑습니다, 학생님 👋</h2>
+            <button class="google-btn" onclick="handleLogout()" style="padding: 8px 16px; font-size: 14px;">로그아웃</button>
+        </div>
 
-        <div class="grid">
-            <a href="index.html" class="card">
-                <div class="icon">🏆</div>
-                <h3>역사 퀴즈 도전</h3>
-                <p>구글 계정으로 로그인하여 역사 퀴즈를 풀고 자신의 실력을 테스트해보세요.</p>
+        <div class="card-container">
+            <a href="quiz.html" class="menu-card">
+                <span class="emoji-icon">📝</span>
+                <div class="card-title">역사 퀴즈</div>
+                <div class="card-desc">이번 학기 배운 내용을<br>퀴즈로 확인해보세요.</div>
             </a>
-
-            <a href="student.html" class="card">
-                <div class="icon">📊</div>
-                <h3>나의 학습 기록</h3>
-                <p>지금까지 응시한 퀴즈 내역과 점수 변화 추이를 한눈에 확인하세요.</p>
+            <a href="student.html" class="menu-card">
+                <span class="emoji-icon">📊</span>
+                <div class="card-title">학습 기록</div>
+                <div class="card-desc">나의 지난 퀴즈 결과와<br>오답 노트를 확인합니다.</div>
             </a>
-
-            <a href="yourscore.html" class="card">
-                <div class="icon">📑</div>
-                <h3>나의 성적표</h3>
-                <p>과목별 성취도와 예상 등급을 확인하고 부족한 부분을 점검하세요.</p>
-            </a>
-
-            <a href="teacher.html" class="card">
-                <div class="icon">👨‍🏫</div>
-                <h3>교사 대시보드</h3>
-                <p>학생들의 실시간 퀴즈 제출 현황을 모니터링하고 데이터를 관리합니다.</p>
-            </a>
-
-            <a href="yourscore-teacher.html" class="card">
-                <div class="icon">⚙️</div>
-                <h3>평가 기준 관리</h3>
-                <p>과목별 수행평가 항목과 반영 비율을 설정하고 수정할 수 있습니다.</p>
-            </a>
-            
-            <a href="#" class="card" style="opacity: 0.6;">
-                <div class="icon">🚀</div>
-                <h3>역사 토론실 (준비중)</h3>
-                <p>논쟁식 토론 수업을 위한 자료실과 모둠 활동 공간입니다.</p>
+            <a href="yourscore.html" class="menu-card">
+                <span class="emoji-icon">📑</span>
+                <div class="card-title">나의 성적표</div>
+                <div class="card-desc">수행평가 점수와<br>예상 등급을 관리하세요.</div>
             </a>
         </div>
     </div>
 
+    <script>
+        // 로그인 시뮬레이션 스크립트 (실제 Firebase 연동 시 교체)
+        function handleLogin() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+        }
+        function handleLogout() {
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
