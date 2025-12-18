@@ -5,72 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>교사 대시보드 - 평가 기준 관리</title>
     <style>
-        /* 기본 스타일 */
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
-        a { text-decoration: none; color: inherit; } /* 링크 밑줄 제거 및 색상 상속 */
-
-        /* 메인 헤더 스타일 */
-        .main-header {
-            background-color: #fff;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 0 20px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            position: sticky; top: 0; z-index: 1000;
+        /* =========================================
+           1. 페이지 전체 레이아웃 (푸터 하단 고정용)
+           ========================================= */
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: #f9fafb; /* 배경색 변경 */
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; /* 화면 전체 높이 사용 */
+            color: #333;
         }
-        .header-content {
+
+        a { text-decoration: none; color: inherit; }
+
+        /* =========================================
+           2. 헤더 스타일 (요청하신 디자인)
+           ========================================= */
+        header { 
+            background-color: white; 
+            border-bottom: 1px solid #e5e7eb; 
+            position: sticky; 
+            top: 0; 
+            z-index: 50; 
+        }
+
+        /* 헤더 내부 컨텐츠 정렬용 컨테이너 */
+        .header-inner {
             max-width: 1600px;
             margin: 0 auto;
-            height: 64px;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        
-        /* 로고 스타일 */
-        .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; display: flex; align-items: center; }
-        .logo-we { color: #2979ff; }   /* We - 파랑 */
-        .logo-story { color: #ffc107; } /* story - 노랑/주황 */
-
-        /* 네비게이션 메뉴 */
-        .main-nav { display: flex; gap: 40px; height: 100%; align-items: center; }
-        .nav-item {
-            font-size: 16px; font-weight: 600; color: #5f6368;
-            height: 100%; display: flex; align-items: center;
-            border-bottom: 3px solid transparent;
-            cursor: pointer; transition: color 0.2s;
-        }
-        .nav-item:hover { color: #2979ff; }
-        /* 활성화된 탭 스타일 */
-        .nav-item.active {
-            color: #2979ff;
-            border-bottom-color: #2979ff;
+            height: 70px; /* 헤더 높이 적절히 지정 */
         }
 
-        /* 헤더 로그아웃 버튼 (타원형) */
+        /* 3. 네비게이션 링크 스타일 */
+        .nav-container {
+            display: flex;
+            height: 100%;
+            align-items: center;
+        }
+
+        .nav-link { 
+            font-weight: 500; 
+            color: #4b5563; 
+            padding: 1.25rem 0.5rem; 
+            margin: 0 1rem; 
+            border-bottom: 3px solid transparent; 
+            transition: all 0.2s; 
+            text-decoration: none; 
+            font-size: 0.95rem; 
+            display: flex;
+            align-items: center;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .nav-link:hover { color: #111827; }
+
+        /* 현재 보고 있는 페이지 표시용 (파란색 강조) */
+        .nav-link.active { 
+            color: #2563eb; 
+            border-bottom-color: #2563eb; 
+            font-weight: 700; 
+        }
+
+        /* 4. WeStory 로고 텍스트 스타일 */
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; display: flex; align-items: center; }
+        .logo-we { color: #2563eb; } /* 파란색 */
+        .logo-story { color: #f59e0b; } /* 주황색 */
+
+        /* 헤더 로그아웃 버튼 (스타일 유지하되 헤더 톤에 맞춤) */
         .btn-logout-header {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #f3f4f6;
+            color: #4b5563;
             border: none;
-            padding: 8px 24px;
-            border-radius: 24px;
-            font-size: 14px;
-            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-logout-header:hover { background-color: #e0e0e0; }
+        .btn-logout-header:hover { background-color: #e5e7eb; color: #111827; }
 
-
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px 20px; min-height: calc(100vh - 200px); }
+        /* =========================================
+           3. 대시보드 내부 스타일 (기존 유지)
+           ========================================= */
+        .container { max-width: 1600px; margin: 0 auto; padding: 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
 
         /* 타이틀 영역 */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-title { font-size: 24px; font-weight: 800; color: #2c3e50; margin: 0; border-bottom: 3px solid #3498db; padding-bottom: 5px; display: inline-block; }
+        .page-title { font-size: 24px; font-weight: 800; color: #111827; margin: 0; display: inline-block; position: relative; }
+        .page-title::after { content: ''; display: block; width: 100%; height: 4px; background: #2563eb; margin-top: 8px; border-radius: 2px; }
 
         /* 로그인 섹션 */
-        #loginSection { max-width: 400px; margin: 100px auto; text-align: center; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #loginSection { max-width: 400px; margin: 100px auto; text-align: center; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
         .btn-google { background-color: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; font-size: 16px; width: 100%; cursor: pointer; border-radius: 6px; margin-top: 20px; transition: background 0.2s; }
-        .btn-google:hover { background-color: #f8f9fa; }
+        .btn-google:hover { background-color: #f9fafb; }
 
         /* 레이아웃 (50:50 분할) */
         .dashboard-layout { display: flex; flex-direction: column; gap: 30px; }
@@ -82,94 +117,97 @@
             .left-panel { flex: 1; } 
             .right-panel { 
                 flex: 1;
-                /* 헤더 높이(64px) + 여백 고려하여 높이 계산 */
-                height: calc(100vh - 120px); 
+                /* 헤더 높이 고려하여 스티키 위치 조정 */
+                height: calc(100vh - 150px); 
                 overflow-y: auto; 
-                position: sticky; top: 84px; /* 헤더 아래에 붙도록 */
+                position: sticky; top: 90px;
                 padding-right: 10px; 
             }
         }
 
         /* 1. 필터 박스 (왼쪽) */
         .big-filter-card {
-            background-color: #e3f2fd; border: 2px solid #2196f3; border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
+            background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px;
         }
-        .filter-header { font-size: 16px; font-weight: bold; color: #1565c0; margin-bottom: 10px; }
+        .filter-header { font-size: 16px; font-weight: bold; color: #1e40af; margin-bottom: 12px; }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
         .filter-row select { 
-            flex: 1; min-width: 100px; padding: 12px; font-size: 16px; border: 1px solid #90caf9; 
-            border-radius: 8px; background: white; font-weight: bold; cursor: pointer;
+            flex: 1; min-width: 100px; padding: 12px; font-size: 15px; border: 1px solid #cbd5e1; 
+            border-radius: 8px; background: white; font-weight: 600; cursor: pointer; color: #334155;
         }
 
         /* 2. 입력 폼 카드 */
-        .input-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 5px solid #2ecc71; }
-        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .input-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; border-top: 5px solid #22c55e; }
+        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; color: #111827; }
         
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b5563; }
         input[type="text"], input[type="number"] {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px;
+            width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 15px;
         }
-        input:focus { border-color: #3498db; outline: none; }
+        input:focus { border-color: #2563eb; outline: none; ring: 2px solid #bfdbfe; }
 
         /* 평가 항목 리스트 */
-        #criteriaList { background-color: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; }
+        #criteriaList { background-color: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 15px; }
         
         .criteria-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         
-        .c-type { flex: 0 0 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .c-name { flex: 3; min-width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .c-max, .c-ratio { flex: 1; min-width: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        .remove-btn { flex: 0 0 40px; background: #e74c3c; color: white; border: none; height: 38px; border-radius: 4px; cursor: pointer; }
+        .c-type { flex: 0 0 100px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; }
+        .c-name { flex: 3; min-width: 120px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; }
+        .c-max, .c-ratio { flex: 1; min-width: 80px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; }
+        .remove-btn { flex: 0 0 40px; background: #ef4444; color: white; border: none; height: 38px; border-radius: 4px; cursor: pointer; }
 
-        .btn-add { background-color: #3498db; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-save { background-color: #2ecc71; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { background-color: #95a5a6; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
+        .btn-add { background-color: #3b82f6; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-save { background-color: #22c55e; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background-color: #9ca3af; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
 
-        /* 3. 목록 카드 및 헤더 (오른쪽 패널) */
+        /* 3. 목록 카드 및 헤더 */
         .list-header { 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; 
         }
         
         .sort-select {
-            padding: 8px 12px; font-size: 14px; border: 1px solid #ffcc80;
-            background-color: #fff3e0; border-radius: 6px; color: #e65100;
+            padding: 8px 12px; font-size: 14px; border: 1px solid #fdba74;
+            background-color: #fff7ed; border-radius: 6px; color: #c2410c;
             font-weight: bold; cursor: pointer;
         }
 
         .plan-card { 
-            background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            border-left: 5px solid #3498db; display: flex; justify-content: space-between; align-items: flex-start;
+            background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;
+            border-left: 5px solid #3b82f6; display: flex; justify-content: space-between; align-items: flex-start;
             transition: transform 0.2s; margin-bottom: 20px; 
         }
         .plan-card:last-child { margin-bottom: 0; }
-        .plan-card:hover { transform: translateX(5px); }
+        .plan-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
         .plan-info { flex: 1; margin-right: 20px; }
-        .plan-info h3 { margin: 0 0 5px 0; font-size: 18px; color: #333; }
-        .plan-meta { font-size: 13px; color: #666; }
-        .plan-items { font-size: 13px; color: #555; margin-top: 10px; line-height: 1.6; background: #f9f9f9; padding: 10px; border-radius: 6px; white-space: normal; word-break: keep-all; }
+        .plan-info h3 { margin: 0 0 5px 0; font-size: 18px; color: #111827; }
+        .plan-meta { font-size: 13px; color: #6b7280; }
+        .plan-items { font-size: 13px; color: #4b5563; margin-top: 10px; line-height: 1.6; background: #f3f4f6; padding: 10px; border-radius: 6px; white-space: normal; word-break: keep-all; }
         .plan-actions { display: flex; gap: 8px; flex-direction: row; flex-shrink: 0; }
         
         .btn-sm { padding: 8px 12px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-edit { background-color: #f39c12; }
-        .btn-delete { background-color: #e74c3c; }
+        .btn-edit { background-color: #f59e0b; }
+        .btn-delete { background-color: #ef4444; }
 
         .hidden { display: none !important; }
-        .empty-msg { text-align: center; color: #999; padding: 40px; background: #fff; border-radius: 12px; }
+        .empty-msg { text-align: center; color: #9ca3af; padding: 40px; background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; }
 
-        /* 푸터 스타일 */
-        .main-footer {
+        /* =========================================
+           4. 푸터 스타일 (요청하신 디자인)
+           ========================================= */
+        footer {
             text-align: center;
-            padding: 40px 0;
-            color: #999;
-            font-size: 14px;
-            border-top: 1px solid #eee;
-            margin-top: 40px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            color: #a8a29e; /* text-stone-400 */
+            font-size: 0.875rem; /* text-sm */
+            border-top: 1px solid #e5e7eb; /* border-t */
+            background-color: white; /* bg-white */
+            margin-top: auto; /* mt-auto (body flex-col과 함께 작동하여 하단 고정) */
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -182,17 +220,19 @@
         </button>
     </div>
 
-    <div id="dashboardSection" class="hidden">
-        <header class="main-header">
-            <div class="header-content">
-                <a href="https://westory28.github.io/Bang-westory/teacher-test.html" class="logo">
+    <div id="dashboardSection" class="hidden" style="display: flex; flex-direction: column; min-height: 100vh; width: 100%;">
+        <header>
+            <div class="header-inner">
+                <a href="https://westory28.github.io/Bang-westory/teacher-test.html" class="logo-text">
                     <span class="logo-we">We</span><span class="logo-story">story</span>
                 </a>
-                <nav class="main-nav">
-                    <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-item">역사 퀴즈 대시보드</a>
-                    <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-item">학생 관리</a>
-                    <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-item active">성적 산출 관리</a>
+
+                <nav class="nav-container">
+                    <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link">학생 관리</a>
+                    <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link active">성적 산출 관리</a>
                 </nav>
+
                 <button class="btn-logout-header" onclick="logout()">로그아웃</button>
             </div>
         </header>
@@ -246,7 +286,7 @@
 
                 <div class="right-panel">
                     <div class="list-header">
-                        <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
+                        <h3 style="margin:0; color:#4b5563;">📂 등록된 평가 기준 목록</h3>
                         <select id="sortFilter" class="sort-select" onchange="handleFilterChange()">
                             <option value="custom">교과 기본순 (국영수...)</option>
                             <option value="name">과목 가나다순 (ㄱ-ㅎ)</option>
@@ -260,8 +300,8 @@
             </div>
         </div>
 
-        <footer class="main-footer">
-            Copyright © 역사교사 방재석. All rights reserved.
+        <footer>
+            Copyright © 역사교사 방재석
         </footer>
     </div>
 
@@ -370,7 +410,7 @@
             filtered.forEach(data => {
                 const card = document.createElement('div');
                 card.className = 'plan-card';
-                const summary = data.items.map(i => `<span style="display:inline-block; margin-right:5px; color:#555;">• ${i.name}(${i.ratio}%)</span>`).join('');
+                const summary = data.items.map(i => `<span style="display:inline-block; margin-right:5px; color:#4b5563;">• ${i.name}(${i.ratio}%)</span>`).join('');
                 const displayGrade = data.grade || '1학년';
 
                 card.innerHTML = `
@@ -405,7 +445,7 @@
             data.items.forEach(item => addRow(item));
 
             document.getElementById('saveBtn').innerText = "🔄 수정사항 저장";
-            document.getElementById('saveBtn').style.backgroundColor = "#f39c12";
+            document.getElementById('saveBtn').style.backgroundColor = "#f59e0b";
             document.getElementById('cancelBtn').style.display = "block";
             document.getElementById('formTitle').innerText = "📝 평가 기준 수정 모드";
             
@@ -429,7 +469,7 @@
             document.getElementById('criteriaList').innerHTML = '';
             addRow(); 
             document.getElementById('saveBtn').innerText = "💾 기준 저장하기";
-            document.getElementById('saveBtn').style.backgroundColor = "#2ecc71";
+            document.getElementById('saveBtn').style.backgroundColor = "#22c55e";
             document.getElementById('cancelBtn').style.display = "none";
             document.getElementById('formTitle').innerText = "✏️ 평가 기준 등록";
         };
