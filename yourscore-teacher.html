@@ -29,7 +29,20 @@
             text-align: center;
         }
         #loginSection input {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+        }
+        .divider {
+            margin: 20px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        .divider span {
+            background-color: #fff;
+            padding: 0 10px;
+            color: #999;
+            font-size: 12px;
+            position: relative;
+            top: 8px; /* 선 위에 글자 얹기 */
         }
 
         h1 {
@@ -111,13 +124,28 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
+            width: 100%; /* 버튼 꽉 차게 */
         }
-        .btn-add { background-color: #3498db; color: white; margin-bottom: 20px; }
-        .btn-save { background-color: #2ecc71; color: white; width: 100%; font-size: 18px; }
-        .btn-login { background-color: #3498db; color: white; width: 100%; font-size: 16px; }
-        .btn-logout { background-color: #95a5a6; color: white; float: right; padding: 8px 15px; font-size: 14px; }
+        .btn-add { background-color: #3498db; color: white; margin-bottom: 20px; width: auto; }
+        .btn-save { background-color: #2ecc71; color: white; font-size: 18px; }
+        .btn-login { background-color: #3498db; color: white; margin-top: 10px; }
+        
+        /* 구글 로그인 버튼 스타일 */
+        .btn-google {
+            background-color: #fff;
+            color: #757575;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-google:hover { background-color: #f5f5f5; }
+        .btn-google img { width: 18px; height: 18px; }
 
-        /* 유틸리티 */
+        .btn-logout { background-color: #95a5a6; color: white; float: right; padding: 8px 15px; font-size: 14px; width: auto; }
+
         .hidden { display: none !important; }
 
         @media (max-width: 768px) {
@@ -131,14 +159,24 @@
 
     <div id="loginSection" class="container">
         <h1>🔐 선생님 로그인</h1>
+        
         <input type="email" id="email" placeholder="이메일 주소" onkeypress="if(event.keyCode==13) login()">
         <input type="password" id="password" placeholder="비밀번호" onkeypress="if(event.keyCode==13) login()">
-        <button class="btn btn-login" onclick="login()">로그인</button>
+        <button class="btn btn-login" onclick="login()">이메일로 로그인</button>
+
+        <div class="divider"><span>또는</span></div>
+
+        <button class="btn btn-google" onclick="loginWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Google 계정으로 로그인
+        </button>
     </div>
 
     <div id="dashboardSection" class="container hidden">
         <button class="btn btn-logout" onclick="logout()">로그아웃</button>
-        <div style="clear: both;"></div> <h1>📝 평가 기준 관리</h1>
+        <div style="clear: both;"></div>
+        
+        <h1>📝 평가 기준 관리</h1>
 
         <div class="form-row">
             <div class="form-group" style="flex: 0 0 150px;">
@@ -167,8 +205,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        // 로그인 기능(Auth) 가져오기
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        // GoogleAuthProvider, signInWithPopup 추가됨
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
@@ -184,32 +222,48 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // ★ 핵심: 로그인 상태 감지기 (문지기)
+        // ★ 핵심: 로그인 상태 및 권한 확인 (문지기)
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 로그인 성공 시: 로그인 창 숨기고, 대시보드 보여줌
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
+                // 로그인 성공! 하지만 westoria28@gmail.com 인지 확인해야 함
+                if (user.email === "westoria28@gmail.com") {
+                    // 통과: 대시보드 보여주기
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                } else {
+                    // 거절: 엉뚱한 아이디로 로그인 함
+                    alert("🚫 접근 거부\n'westoria28@gmail.com' 계정으로만 접근할 수 있습니다.");
+                    signOut(auth); // 즉시 쫓아내기(로그아웃)
+                }
             } else {
-                // 로그아웃 상태 시: 대시보드 숨기고, 로그인 창 보여줌
+                // 로그아웃 상태: 로그인 창 보여주기
                 document.getElementById('loginSection').classList.remove('hidden');
                 document.getElementById('dashboardSection').classList.add('hidden');
             }
         });
 
-        // 1. 로그인 함수
+        // 1-1. 이메일 로그인 함수
         window.login = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
             if(!email || !password) { alert("이메일과 비밀번호를 입력해주세요."); return; }
-
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // 성공하면 onAuthStateChanged가 자동으로 화면을 전환해줍니다.
             } catch (error) {
                 console.error("Login Error:", error);
-                alert("로그인 실패: 이메일이나 비밀번호를 확인해주세요.\n(" + error.code + ")");
+                alert("로그인 실패: 정보를 확인해주세요.");
+            }
+        };
+
+        // 1-2. ★ 구글 로그인 함수 (새로 추가됨)
+        window.loginWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                // 성공하면 위의 onAuthStateChanged가 자동으로 이메일 검사를 수행합니다.
+            } catch (error) {
+                console.error("Google Login Error:", error);
+                alert("구글 로그인 중 오류가 발생했습니다.");
             }
         };
 
@@ -242,13 +296,16 @@
             button.parentElement.remove();
         };
 
-        // 초기 화면 설정 (빈 칸 추가)
         addRow();
 
         // 4. 저장 함수
         window.saveToFirebase = async () => {
             const user = auth.currentUser;
-            if (!user) { alert("로그인이 필요합니다."); return; }
+            // 한번 더 철저하게 검사
+            if (!user || user.email !== "westoria28@gmail.com") { 
+                alert("권한이 없습니다."); 
+                return; 
+            }
 
             const semester = document.getElementById('semesterSelect').value;
             const subject = document.getElementById('subjectName').value.trim();
