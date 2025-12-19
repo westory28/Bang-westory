@@ -65,7 +65,7 @@
 
     <header>
         <div class="header-container relative">
-            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
 
@@ -152,7 +152,7 @@
                         this.loadExamData();
                     } else {
                         alert("로그인이 필요합니다.");
-                        location.href = 'https://westory28.github.io/Bang-westory/index-test.html';
+                        location.href = 'https://westory28.github.io/Bang-westory/index.html';
                     }
                 });
             },
@@ -163,7 +163,7 @@
             },
 
             logout: function() { 
-                firebase.auth().signOut().then(() => location.href='https://westory28.github.io/Bang-westory/index-test.html'); 
+                firebase.auth().signOut().then(() => location.href='https://westory28.github.io/Bang-westory/index.html'); 
             },
 
             loadExamData: function() {
