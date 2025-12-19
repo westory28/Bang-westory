@@ -16,7 +16,7 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f9fafb; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* --- [헤더 스타일: 모바일 반응형 강화] --- */
+        /* --- [헤더 스타일] --- */
         header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
         
@@ -25,13 +25,13 @@
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
-        /* PC용 네비게이션 (1024px 이상에서만 보임) */
+        /* PC용 네비게이션 */
         .desktop-nav { display: flex; height: 100%; }
         .nav-link { font-weight: 500; color: #6b7280; margin: 0 0.8rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .nav-link:hover { color: #111827; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
 
-        /* 모바일 햄버거 버튼 (1024px 미만에서만 보임) */
+        /* 모바일 햄버거 버튼 */
         .mobile-menu-btn { display: none; margin-left: 1rem; font-size: 1.5rem; color: #374151; cursor: pointer; padding: 0.5rem; }
         
         /* 모바일 드롭다운 메뉴 */
@@ -54,9 +54,11 @@
         .col-answer { background-color: #fffbeb; color: #b45309; font-weight: bold; }
         .rate-bar-bg { background-color: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; width: 100%; margin-top: 4px; }
         .rate-bar-fill { height: 100%; transition: width 0.5s ease; }
-        .page-btn { padding: 6px 12px; margin: 0 2px; border: 1px solid #d1d5db; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem; }
-        .page-btn.active { background-color: #4b5563; color: white; border-color: #4b5563; font-weight: bold; }
-
+        
+        /* [미리보기 버튼 스타일 복구] */
+        .choice-btn { width: 100%; text-align: left; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background-color: white; margin-bottom: 0.5rem; transition: all 0.2s; }
+        .choice-btn:hover { background-color: #f9fafb; }
+        
         /* 로딩 오버레이 */
         #loading-overlay { display: flex; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: #4b5563; }
     </style>
@@ -70,7 +72,7 @@
 
     <header>
         <div class="header-container">
-            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/teacher.html'">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/teacher-test.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
 
@@ -135,7 +137,6 @@
             <div class="bg-white rounded-lg shadow border border-stone-200 p-6">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
                     <h2 class="text-xl font-bold text-stone-800"><i class="fas fa-history text-blue-500 mr-2"></i>제출 현황 <span id="log-count" class="text-sm font-normal text-gray-500"></span></h2>
-                    
                     <div class="flex flex-wrap gap-2 items-center">
                         <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded">▼ 반 선택 필수</span>
                         <select id="select-class-trigger" onchange="app.loadByClass(this.value)" class="p-2 border-2 border-blue-500 rounded text-sm font-bold bg-blue-50 cursor-pointer min-w-[100px]">
@@ -148,7 +149,6 @@
                         <button onclick="app.deleteSelectedLogs()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded border border-red-200 text-sm font-bold">선택 삭제</button>
                     </div>
                 </div>
-
                 <div class="overflow-x-auto min-h-[400px]">
                     <table class="w-full text-sm text-left admin-table">
                         <thead class="bg-stone-100 text-stone-600 font-bold uppercase text-xs">
@@ -189,7 +189,7 @@
                                 <th class="p-3 w-24">단원</th>
                                 <th class="p-3 w-20 text-center">유형</th>
                                 <th class="p-3">문제 내용</th>
-                                <th class="p-3 w-24 text-center">정답</th>
+                                <th class="p-3 w-16 text-center">보기</th> <th class="p-3 w-24 text-center">정답</th>
                                 <th class="p-3 w-24 text-center">정답률</th>
                             </tr>
                         </thead>
@@ -235,6 +235,14 @@
 
     <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center"><div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.closeEditModal()"></div><div class="bg-white p-6 rounded-lg shadow-xl z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-xl mb-4 border-b pb-2">문제 수정</h3><input type="hidden" id="edit-q-id"><div class="space-y-4"><div><label class="block text-sm font-bold mb-1">단원</label><select id="edit-q-unit" class="w-full p-2 border rounded"><option value="I. 문명의 발생과 고대 세계의 형성">I. 고대 세계</option><option value="II. 세계 종교의 확산과 지역 문화의 형성">II. 세계 종교</option><option value="III. 지역 세계의 교류와 변화">III. 지역 세계</option><option value="IV. 제국주의 침략과 국민 국가 건설 운동">IV. 제국주의</option><option value="V. 세계 대전과 사회 변동">V. 세계 대전</option></select></div><div><label class="block text-sm font-bold mb-1">유형</label><select id="edit-q-type" class="w-full p-2 border rounded" onchange="app.toggleOptionInput('edit')"><option value="choice">객관식</option><option value="word">단답형</option><option value="ox">O/X 퀴즈</option></select></div><div><label class="block text-sm font-bold mb-1">이미지</label><input type="file" id="edit-q-image-input" accept="image/*" class="w-full text-xs" onchange="app.handleImageUpload(this, 'edit')"><input type="hidden" id="edit-q-image-base64"><button onclick="document.getElementById('edit-q-image-base64').value='';" class="text-red-500 text-xs mt-1">이미지 삭제</button></div><div><label class="block text-sm font-bold mb-1">문제</label><textarea id="edit-q-text" class="w-full p-2 border rounded h-20"></textarea></div><div id="option-container-edit"><label class="block text-sm font-bold mb-1">보기</label><input type="text" id="edit-q-options" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">정답</label><input type="text" id="edit-q-answer" class="w-full p-2 border rounded"></div><div><label class="block text-sm font-bold mb-1">해설</label><input type="text" id="edit-q-exp" class="w-full p-2 border rounded"></div><div class="flex gap-2 pt-2"><button onclick="app.saveEditedQuestion()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded">저장</button><button onclick="app.closeEditModal()" class="flex-1 bg-stone-200 text-stone-700 font-bold py-3 rounded">취소</button></div></div></div></div>
 
+    <div id="preview-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="document.getElementById('preview-modal').style.display='none'"></div>
+        <div class="bg-white p-8 rounded-lg shadow-xl z-10 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
+            <div id="preview-content"></div>
+            <div class="mt-6 text-center"><button onclick="document.getElementById('preview-modal').style.display='none'" class="bg-gray-200 px-4 py-2 rounded font-bold hover:bg-gray-300">닫기</button></div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
         let db; try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } db = firebase.firestore(); } catch(e) { console.error("Firebase 초기화 실패", e); }
@@ -244,21 +252,18 @@
             state: { allQuestions:[], logs:[], logPage: 1, logsPerPage: 50 },
             
             init: function() {
-                // 로그인 화면을 기본으로 숨기고 로딩 오버레이만 띄운 상태에서 시작
                 document.getElementById('view-login-screen').style.display = 'none';
                 document.getElementById('view-dashboard').style.display = 'none';
                 this.showLoading(true);
 
                 firebase.auth().onAuthStateChanged((user) => {
-                    this.showLoading(false); // 로딩 끝
+                    this.showLoading(false);
                     if (user && user.email === TEACHER_EMAIL) {
-                        // 로그인 된 상태 -> 바로 대시보드
                         document.getElementById('view-login-screen').style.display = 'none';
                         document.getElementById('view-dashboard').style.display = 'block';
                         this.loadQuestions();
                         this.setTab('log');
                     } else {
-                        // 로그인 안 된 상태 -> 로그인 화면 표시
                         if(user) { alert("권한이 없습니다."); firebase.auth().signOut(); }
                         document.getElementById('view-login-screen').style.display = 'flex';
                         document.getElementById('view-dashboard').style.display = 'none';
@@ -266,14 +271,9 @@
                 });
             },
 
-            // --- [Mobile Menu Function] ---
             toggleMobileMenu: function() {
                 const menu = document.getElementById('mobile-menu');
-                if (menu.style.display === 'block') {
-                    menu.style.display = 'none';
-                } else {
-                    menu.style.display = 'block';
-                }
+                if (menu.style.display === 'block') { menu.style.display = 'none'; } else { menu.style.display = 'block'; }
             },
 
             login: function() {
@@ -355,10 +355,33 @@
                     return `<tr class="border-b hover:bg-stone-50"><td class="p-3 text-center"><input type="checkbox" class="q-checkbox" value="${q.id}"></td>
                     <td class="p-3 text-center text-xs font-bold text-stone-500">${q.id}</td><td class="p-3 text-xs text-gray-500">${q.unit||'-'}</td>
                     <td class="p-3 text-center text-xs bg-stone-100 rounded">${q.type}</td><td class="p-3 text-sm cursor-pointer hover:text-blue-600 font-bold" onclick="app.editQuestion(${q.id})">${q.question}</td>
+                    <td class="p-3 text-center"><button onclick="app.previewQuestion(${q.id})" class="text-stone-500 hover:text-blue-600"><i class="fas fa-eye"></i></button></td>
                     <td class="p-3 text-center text-xs font-bold text-amber-700 bg-amber-50 rounded">${q.answer}</td>
                     <td class="p-3 text-center text-xs"><b>${rate}%</b><div class="rate-bar-bg"><div class="rate-bar-fill bg-green-500" style="width:${rate}%"></div></div></td></tr>`;
                 }).join('');
             },
+            
+            // [미리보기 기능 복구]
+            previewQuestion: function(id) { 
+                const q = this.state.allQuestions.find(x => x.id === id); if(!q) return; 
+                let html = `<div class="mb-4 font-bold text-lg text-stone-800">[Q] ${q.question}</div>`;
+                if(q.image) html += `<div class="text-center mb-4"><img src="${q.image}" class="max-w-full h-auto max-h-60 rounded border mx-auto"></div>`;
+                html += `<div id="preview-interaction-area" class="space-y-2">`;
+                if(q.type === 'choice') {
+                    q.options.forEach((opt, idx) => { html += `<div class="choice-btn p-3 border rounded cursor-pointer hover:bg-stone-50 transition-colors" onclick="app.handlePreviewClick(this, ${opt.trim() === q.answer.trim()})"><span class="font-bold mr-2 text-stone-500">${idx+1}.</span> ${opt}</div>`; });
+                } else if(q.type === 'ox') {
+                    const isO = q.answer === 'O'; html += `<div class="flex gap-4 h-24"><button class="flex-1 border-2 rounded-xl text-3xl font-bold text-blue-500 hover:bg-blue-50" onclick="alert('${isO?'O':'X'}')">O</button><button class="flex-1 border-2 rounded-xl text-3xl font-bold text-red-500 hover:bg-red-50" onclick="alert('${!isO?'O':'X'}')">X</button></div>`;
+                } else if(q.type === 'word') { 
+                    html += `<input type="text" class="w-full p-3 border-b-2 outline-none text-center text-lg" placeholder="정답 입력 후 엔터" onkeydown="if(event.key==='Enter') { alert(this.value.trim() === '${q.answer}' ? 'O' : 'X'); }">`;
+                }
+                html += `</div>`; document.getElementById('preview-content').innerHTML = html; document.getElementById('preview-modal').style.display = 'flex';
+            },
+            handlePreviewClick: function(el, isCorrect) {
+                Array.from(el.parentNode.children).forEach(c => c.className = "choice-btn p-3 border rounded cursor-pointer hover:bg-stone-50 transition-colors");
+                el.className = "choice-btn p-3 border-2 border-amber-500 bg-amber-50 rounded cursor-pointer font-bold text-amber-900";
+                setTimeout(() => alert(isCorrect ? "⭕ 정답!" : "❌ 오답!"), 100);
+            },
+
             deleteSelectedQuestions: function() {
                 const chk = document.querySelectorAll('.q-checkbox:checked');
                 if(chk.length && confirm("문제 삭제?")) {
