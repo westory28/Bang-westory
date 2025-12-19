@@ -30,26 +30,24 @@
             position: sticky; 
             top: 0; 
             z-index: 50; 
-            /* 높이 자동 조절 (모바일 메뉴 열림 대응) */
             height: auto;
-            min-height: 64px;
         }
         
         .header-container {
             max-width: 80rem; 
             margin: 0 auto; 
             padding: 0 1.5rem; 
-            height: 64px; /* 기본 헤더 높이 */
+            height: 64px; 
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         
-        /* PC용 네비게이션 */
+        /* PC용 네비게이션 (lg 이상에서 보임) */
         .nav-link { 
             font-weight: 500; 
             color: #6b7280; 
-            margin: 0 1rem; 
+            margin: 0 0.75rem; /* 간격 조정 */
             text-decoration: none; 
             font-size: 0.95rem; 
             height: 100%;
@@ -57,6 +55,7 @@
             align-items: center;
             border-bottom: 3px solid transparent; 
             transition: all 0.2s; 
+            white-space: nowrap;
         }
         .nav-link:hover { color: #111827; }
         .nav-link.active { 
@@ -66,17 +65,32 @@
         }
 
         /* 모바일용 네비게이션 스타일 */
+        .mobile-menu-box {
+            border-top: 1px solid #f3f4f6;
+            background-color: white;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0; /* 기본 닫힘 */
+        }
+        .mobile-menu-box.open {
+            max-height: 300px; /* 열릴 때 최대 높이 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
         .mobile-menu-link {
-            display: block;
+            display: flex;
+            align-items: center;
             padding: 1rem 1.5rem;
             border-bottom: 1px solid #f3f4f6;
             color: #4b5563;
             font-weight: 500;
             text-decoration: none;
+            transition: background-color 0.2s;
         }
         .mobile-menu-link:hover { background-color: #f9fafb; color: #111827; }
         .mobile-menu-link.active { color: #2563eb; font-weight: 700; background-color: #eff6ff; }
-        
+        .mobile-menu-link i { width: 24px; text-align: center; margin-right: 8px; }
+
         .logo-text { 
             font-size: 1.5rem; 
             font-weight: 800; 
@@ -104,19 +118,28 @@
 
     <div id="loading-overlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-white border-solid mb-4"></div>
-        <p class="text-xl font-bold">데이터 확인 중...</p>
+        <p class="text-xl font-bold">인증 정보 확인 중...</p>
     </div>
 
-    <header>
+    <header id="main-header">
         <div class="header-container">
-            <div class="logo-text" onclick="location.href='teacher-test.html'">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/teacher-test.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
 
-            <nav class="hidden md:flex h-full">
-                <a href="teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
-                <a href="teacher_student-list-admin.html" class="nav-link active">학생 관리</a>
-                <a href="teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
+            <nav class="hidden lg:flex h-full">
+                <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">
+                    역사 퀴즈 대시보드
+                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link active">
+                    학생 관리
+                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link">
+                    성적 산출 관리
+                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="nav-link">
+                    시험 채점 관리
+                </a>
             </nav>
 
             <div class="flex items-center gap-2">
@@ -124,21 +147,24 @@
                     로그아웃
                 </button>
                 
-                <button onclick="app.toggleMobileMenu()" class="md:hidden text-stone-500 hover:text-stone-800 p-2 rounded focus:outline-none">
+                <button id="mobile-menu-btn" onclick="app.toggleMobileMenu(event)" class="lg:hidden text-stone-500 hover:text-stone-800 p-2 rounded focus:outline-none">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-stone-100 shadow-lg">
-            <a href="teacher_quiz-admin.html" class="mobile-menu-link">
-                <i class="fas fa-chart-line w-6 text-center mr-2 text-stone-400"></i>역사 퀴즈 대시보드
+        <div id="mobile-menu" class="mobile-menu-box lg:hidden">
+            <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="mobile-menu-link">
+                <i class="fas fa-chart-line text-stone-400"></i>역사 퀴즈 대시보드
             </a>
-            <a href="teacher_student-list-admin.html" class="mobile-menu-link active">
-                <i class="fas fa-user-graduate w-6 text-center mr-2 text-blue-500"></i>학생 관리
+            <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="mobile-menu-link active">
+                <i class="fas fa-user-graduate text-blue-500"></i>학생 관리
             </a>
-            <a href="teacher_yourscore-admin.html" class="mobile-menu-link">
-                <i class="fas fa-calculator w-6 text-center mr-2 text-stone-400"></i>성적 산출 관리
+            <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="mobile-menu-link">
+                <i class="fas fa-calculator text-stone-400"></i>성적 산출 관리
+            </a>
+            <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="mobile-menu-link">
+                <i class="fas fa-edit text-stone-400"></i>시험 채점 관리
             </a>
         </div>
     </header>
@@ -177,7 +203,8 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left admin-table min-w-[600px]"> <thead class="bg-stone-100 text-stone-600 font-bold uppercase text-xs">
+                    <table class="w-full text-sm text-left admin-table min-w-[600px]">
+                        <thead class="bg-stone-100 text-stone-600 font-bold uppercase text-xs">
                             <tr>
                                 <th class="p-4 w-16 text-center">반</th>
                                 <th class="p-4 w-16 text-center">번호</th>
@@ -280,14 +307,25 @@
             init: function() {
                 if (typeof firebase === 'undefined' || !firebase.auth) { alert("Firebase 로드 실패"); return; }
                 
+                // 전역 클릭 리스너: 모바일 메뉴 바깥 클릭 시 닫기
+                document.addEventListener('click', (e) => {
+                    const menu = document.getElementById('mobile-menu');
+                    const btn = document.getElementById('mobile-menu-btn');
+                    if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                        menu.classList.remove('open');
+                    }
+                });
+
                 firebase.auth().onAuthStateChanged((user) => {
                     this.showLoading(false);
                     if (user && user.email === TEACHER_EMAIL) {
+                        // 이미 로그인 된 상태면 컨텐츠 바로 표시
                         document.getElementById('view-login-screen').style.display = 'none';
                         document.getElementById('view-content').style.display = 'block';
                         this.loadStudents();
                         this.loadQuestionsForDetail(); 
                     } else {
+                        // 로그아웃 상태면 로그인 화면 표시
                         document.getElementById('view-login-screen').style.display = 'flex';
                         document.getElementById('view-content').style.display = 'none';
                         if(user) { 
@@ -299,9 +337,10 @@
             },
 
             // 모바일 메뉴 토글 함수
-            toggleMobileMenu: function() {
+            toggleMobileMenu: function(event) {
+                if(event) event.stopPropagation(); // 버튼 클릭 시 즉시 닫힘 방지
                 const menu = document.getElementById('mobile-menu');
-                menu.classList.toggle('hidden');
+                menu.classList.toggle('open');
             },
 
             login: function() {
@@ -323,7 +362,7 @@
                 });
             },
 
-            // --- 학생 관리 로직 ---
+            // --- 학생 관리 로직 (기존 유지) ---
             loadStudents: function() {
                 this.showLoading(true);
                 db.collection("users").get().then((snapshot) => {
