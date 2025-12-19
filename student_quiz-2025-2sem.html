@@ -15,16 +15,16 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; }
         
-        /* [공통 헤더 가이드라인 적용] */
-        /* 헤더 고정 스타일 */
+        /* [헤더 스타일] */
         header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
         
-        /* 네비게이션 컨테이너 */
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
         
-        /* 네비게이션 링크 */
-        .header-nav { display: flex; height: 100%; gap: 1.5rem; }
-        .nav-link { font-weight: 500; color: #6b7280; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        /* PC용 네비게이션 */
+        .desktop-nav { display: none; height: 100%; gap: 1.5rem; } /* 기본 숨김, lg이상에서 flex */
+        @media (min-width: 1024px) { .desktop-nav { display: flex; } }
+
+        .nav-link { font-weight: 500; color: #6b7280; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .nav-link:hover { color: #111827; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
         
@@ -33,53 +33,59 @@
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
-        /* 로그아웃 버튼 */
-        .btn-logout-text { color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        /* 로그아웃 버튼 (PC) */
+        .btn-logout-text { color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; white-space: nowrap;}
         .btn-logout-text:hover { color: #292524; background-color: #f5f5f4; }
 
+        /* [모바일 메뉴 스타일] */
+        .mobile-menu-btn { display: block; font-size: 1.5rem; color: #4b5563; cursor: pointer; padding: 0.5rem; }
+        @media (min-width: 1024px) { .mobile-menu-btn { display: none; } }
 
-        /* [기존 페이지 스타일 유지] */
-        /* 리스트 아이템 스타일 (성적표 바 형태) */
-        .list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 1.25rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            margin-bottom: 0.75rem;
-        }
-        
-        /* 활성화된 아이템 */
+        #mobile-menu { position: absolute; top: 64px; left: 0; width: 100%; background-color: white; border-bottom: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: none; flex-direction: column; z-index: 40; }
+        #mobile-menu.open { display: flex; }
+        .mobile-link { padding: 1rem 1.5rem; font-weight: 500; color: #4b5563; text-decoration: none; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
+        .mobile-link:hover { background-color: #f9fafb; color: #111827; }
+        .mobile-link.active { color: #2563eb; background-color: #eff6ff; font-weight: 700; border-left: 4px solid #2563eb; }
+        .mobile-logout { padding: 1rem 1.5rem; text-align: left; color: #78716c; font-weight: 700; font-size: 0.9rem; width: 100%; background: #f5f5f4; }
+
+        /* 기존 리스트 스타일 유지 */
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1.25rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; margin-bottom: 0.75rem; }
         .list-item.active { cursor: pointer; border-left: 5px solid #2563eb; }
         .list-item.active:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
-        /* 비활성화(준비중) 아이템 */
-        .list-item.locked { 
-            cursor: not-allowed; 
-            background-color: #f9fafb;
-            border-left: 5px solid #d1d5db; /* 회색 바 */
-            opacity: 0.7;
-        }
+        .list-item.locked { cursor: not-allowed; background-color: #f9fafb; border-left: 5px solid #d1d5db; opacity: 0.7; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <header>
         <div class="header-container">
-            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index-test.html'">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
     
-            <nav class="header-nav">
+            <nav class="desktop-nav">
                 <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link active">역사 퀴즈</a>
                 <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-link">학습 기록</a>
                 <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-link">나의 성적표</a>
-            </nav>
+                <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="nav-link">시험 채점</a> </nav>
     
-            <button onclick="logout()" class="btn-logout-text">
-                로그아웃
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="logout()" class="btn-logout-text hidden lg:block">
+                    로그아웃
+                </button>
+
+                <button id="mobile-menu-btn" class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu">
+            <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="mobile-link active">역사 퀴즈</a>
+            <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="mobile-link">학습 기록</a>
+            <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="mobile-link">나의 성적표</a>
+            <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="mobile-link">시험 채점</a>
+            <button onclick="logout()" class="mobile-logout">로그아웃</button>
         </div>
     </header>
 
@@ -116,47 +122,34 @@
             </h2>
 
             <div class="flex flex-col">
-                
                 <div class="list-item locked">
                     <div>
                         <div class="text-xs text-stone-400 font-bold mb-1">1단원</div>
                         <h3 class="text-lg font-bold text-stone-500">문명의 형성</h3>
                     </div>
-                    <div class="text-right">
-                        <span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span>
-                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
                 </div>
-
                 <div class="list-item locked">
                     <div>
                         <div class="text-xs text-stone-400 font-bold mb-1">2단원</div>
                         <h3 class="text-lg font-bold text-stone-500">고조선의 성립</h3>
                     </div>
-                    <div class="text-right">
-                        <span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span>
-                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
                 </div>
-
                 <div class="list-item locked">
                     <div>
                         <div class="text-xs text-stone-400 font-bold mb-1">3단원</div>
                         <h3 class="text-lg font-bold text-stone-500">삼국 시대의 전개</h3>
                     </div>
-                    <div class="text-right">
-                        <span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span>
-                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
                 </div>
-
                 <div class="list-item locked">
                     <div>
                         <div class="text-xs text-stone-400 font-bold mb-1">4단원</div>
                         <h3 class="text-lg font-bold text-stone-500">통일 신라와 발해</h3>
                     </div>
-                    <div class="text-right">
-                        <span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span>
-                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
                 </div>
-
             </div>
         </section>
 
@@ -179,6 +172,7 @@
         
         try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } } catch(e) {}
 
+        // 로그인 상태 체크 (로그인 안 된 경우에만 튕김)
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) { 
                 location.href = 'https://westory28.github.io/Bang-westory/index-test.html'; 
@@ -192,6 +186,23 @@
                 });
             }
         }
+
+        // [모바일 메뉴 토글 기능]
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('open');
+        }
+
+        // 화면 외부 클릭 시 모바일 메뉴 닫기
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('mobile-menu-btn');
+            
+            // 메뉴가 열려있고, 클릭한 곳이 메뉴 내부나 버튼이 아니라면 닫음
+            if (menu.classList.contains('open') && !menu.contains(event.target) && !btn.contains(event.target)) {
+                menu.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
