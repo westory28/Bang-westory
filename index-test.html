@@ -31,12 +31,10 @@
             z-index: 100;
         }
 
-        /* 상단바 로고 스타일 (링크 태그로 변경) */
         .header-logo { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; text-decoration: none; }
         .we { color: #1a73e8; }   /* 파란색 */
         .story { color: #f9ab00; } /* 노란색 */
 
-        /* 상단바 버튼 */
         .header-btn {
             background-color: #e4e6eb; 
             color: #050505;
@@ -53,7 +51,7 @@
         /* 3. 메인 컨텐츠 영역 */
         main { flex: 1; display: flex; flex-direction: column; width: 100%; }
 
-        /* --- [화면 A] 로그인 뷰 (정중앙 배치) --- */
+        /* --- [화면 A] 로그인 뷰 --- */
         #login-view { 
             flex: 1; 
             display: flex; 
@@ -64,11 +62,9 @@
             padding: 20px; 
         }
         
-        /* 로그인 화면 큰 로고 */
         .main-logo { font-size: 4rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
         .main-subtitle { font-size: 1.6rem; color: #606770; margin-bottom: 50px; font-weight: 500; }
         
-        /* 구글 로그인 버튼 */
         .google-login-btn { 
             background: #fff; border: 1px solid #dadce0; padding: 14px 36px; border-radius: 40px; 
             font-size: 18px; font-weight: 600; color: #3c4043; cursor: pointer; display: flex; align-items: center; gap: 12px; 
@@ -81,7 +77,9 @@
         
         .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; }
         
-        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        /* PC 화면: 그리드 레이아웃 (카드형) */
+        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+        
         .menu-card {
             background: white; border-radius: 12px; padding: 40px 30px; text-align: center; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #ddd;
@@ -90,9 +88,45 @@
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-color: #1a73e8; }
         
-        .card-icon { width: 60px; height: 60px; background: #e8f0fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 20px; }
+        .card-icon { width: 60px; height: 60px; background: #e8f0fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 20px; flex-shrink: 0; }
+        
+        /* 텍스트 정렬을 위해 div로 감쌈 */
+        .card-text-wrap { display: flex; flex-direction: column; }
         .card-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #202124; }
         .card-desc { color: #5f6368; font-size: 15px; line-height: 1.5; word-break: keep-all; }
+
+        /* --- [모바일 최적화] 화면 폭 768px 이하일 때 리스트 뷰로 변경 --- */
+        @media (max-width: 768px) {
+            header { padding: 12px 20px; } /* 헤더 여백 축소 */
+            .header-logo { font-size: 20px; }
+            
+            #dashboard-view { margin: 20px auto; }
+            .welcome-msg { font-size: 22px; margin-bottom: 20px; }
+
+            /* 1열로 변경 */
+            .card-container { grid-template-columns: 1fr; gap: 12px; }
+
+            /* 카드 스타일 -> 가로형 리스트 바(Bar)로 변경 */
+            .menu-card {
+                flex-direction: row; /* 가로 정렬 */
+                justify-content: flex-start; /* 왼쪽 정렬 */
+                padding: 20px; /* 내부 여백 축소 */
+                text-align: left; /* 텍스트 왼쪽 정렬 */
+                align-items: center;
+            }
+
+            .menu-card:hover { transform: none; /* 모바일은 호버 효과 제거 또는 약하게 */ }
+
+            /* 아이콘 크기 및 위치 조정 */
+            .card-icon {
+                width: 48px; height: 48px; font-size: 24px;
+                margin-bottom: 0; /* 아래 여백 제거 */
+                margin-right: 20px; /* 오른쪽 여백 추가 */
+            }
+
+            .card-title { font-size: 18px; margin-bottom: 4px; }
+            .card-desc { font-size: 13px; }
+        }
 
         /* 4. 푸터 */
         footer {
@@ -134,18 +168,34 @@
             <div class="card-container">
                 <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="menu-card">
                     <div class="card-icon">📝</div>
-                    <div class="card-title">역사 퀴즈</div>
-                    <div class="card-desc">이번 학기 배운 내용을<br>퀴즈로 확인해보세요.</div>
+                    <div class="card-text-wrap">
+                        <div class="card-title">역사 퀴즈</div>
+                        <div class="card-desc">이번 학기 배운 내용을<br>퀴즈로 확인해보세요.</div>
+                    </div>
                 </a>
+                
                 <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="menu-card">
                     <div class="card-icon">📊</div>
-                    <div class="card-title">학습 기록</div>
-                    <div class="card-desc">나의 지난 퀴즈 결과와<br>오답 노트를 확인합니다.</div>
+                    <div class="card-text-wrap">
+                        <div class="card-title">학습 기록</div>
+                        <div class="card-desc">나의 지난 퀴즈 결과와<br>오답 노트를 확인합니다.</div>
+                    </div>
                 </a>
+                
                 <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="menu-card">
                     <div class="card-icon">📑</div>
-                    <div class="card-title">나의 성적표</div>
-                    <div class="card-desc">수행평가 점수와<br>예상 등급을 관리하세요.</div>
+                    <div class="card-text-wrap">
+                        <div class="card-title">나의 성적표</div>
+                        <div class="card-desc">수행평가 점수와<br>예상 등급을 관리하세요.</div>
+                    </div>
+                </a>
+
+                <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="menu-card">
+                    <div class="card-icon">✅</div>
+                    <div class="card-text-wrap">
+                        <div class="card-title">시험 채점</div>
+                        <div class="card-desc">OMR 정답을 입력하고<br>점수를 확인하세요.</div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -157,24 +207,18 @@
 
     <script>
         function handleLogin() {
-            // 1. 화면 전환 (로그인창 숨김, 대시보드 보임)
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('dashboard-view').classList.remove('hidden');
-
-            // 2. 헤더 표시
             document.getElementById('main-header').classList.remove('hidden');
-
-            // 3. 학생 이름 설정 (예시)
+            
+            // 학생 이름 예시
             const studentName = "방재석"; 
             document.getElementById('greeting-text').innerHTML = `반갑습니다, ${studentName} 학생님 👋`;
         }
 
         function handleLogout() {
-            // 1. 화면 전환 (로그인창 보임, 대시보드 숨김)
             document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('login-view').classList.remove('hidden');
-
-            // 2. 헤더 숨김
             document.getElementById('main-header').classList.add('hidden');
         }
     </script>
