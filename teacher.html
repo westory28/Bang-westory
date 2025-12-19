@@ -17,7 +17,7 @@
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
-        /* [헤더 스타일] */
+        /* 헤더 스타일 (가이드라인 준수) */
         header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
         
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
@@ -58,21 +58,66 @@
         #dashboard-view { max-width: 1280px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box; }
         .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; }
 
-        /* 카드 그리드 */
-        .card-container { display: grid; gap: 24px; grid-template-columns: 1fr; }
-        @media (min-width: 768px) { .card-container { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1200px) { .card-container { grid-template-columns: repeat(4, 1fr); } }
+        /* --- [PC/태블릿 카드 스타일] --- */
+        .card-container { 
+            display: grid; 
+            gap: 24px; 
+            grid-template-columns: repeat(4, 1fr); /* PC 기본: 4열 */
+        }
 
-        /* 카드 디자인 */
         .menu-card {
             background: white; border-radius: 12px; padding: 40px 24px; text-align: center; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #e5e7eb;
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #2563eb; }
-        .card-icon { width: 64px; height: 64px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; color: #2563eb; }
+        
+        .card-icon { width: 64px; height: 64px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; color: #2563eb; flex-shrink: 0; }
         .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #111827; }
         .card-desc { color: #6b7280; font-size: 0.95rem; line-height: 1.5; word-break: keep-all; }
+
+        /* --- [모바일 최적화 (768px 이하)] --- */
+        @media (max-width: 768px) {
+            .header-container { padding: 0 1rem; }
+            .logo-text { font-size: 1.3rem; }
+            
+            #dashboard-view { margin: 20px auto; padding: 0 16px; }
+            .welcome-msg { font-size: 1.5rem; margin-bottom: 24px; }
+
+            /* 1. 그리드 1열로 변경 및 간격 강제 적용 */
+            .card-container {
+                grid-template-columns: 1fr;
+                gap: 16px !important; /* 카드 사이 간격 확실하게 줌 */
+            }
+
+            /* 2. 카드를 가로형 바(Bar) 스타일로 변경 -> 높이 축소 */
+            .menu-card {
+                flex-direction: row; /* 가로 배치 */
+                padding: 20px;       /* 패딩 축소 */
+                text-align: left;    /* 텍스트 왼쪽 정렬 */
+                align-items: center; /* 수직 중앙 정렬 */
+                justify-content: flex-start;
+                gap: 16px;           /* 아이콘과 텍스트 사이 간격 */
+                min-height: auto;    /* 최소 높이 해제 */
+            }
+
+            /* 아이콘 크기 및 여백 조정 */
+            .card-icon {
+                margin-bottom: 0;    /* 아래 여백 제거 */
+                width: 48px;         /* 크기 축소 */
+                height: 48px;
+                font-size: 24px;
+            }
+
+            /* 텍스트 크기 조정 */
+            .card-title { font-size: 1.1rem; margin-bottom: 4px; }
+            .card-desc { font-size: 0.85rem; line-height: 1.3; }
+        }
+
+        /* 반응형 그리드 보조 (태블릿 구간) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .card-container { grid-template-columns: repeat(2, 1fr); }
+        }
 
         footer { text-align: center; padding: 30px; color: #9ca3af; font-size: 13px; border-top: 1px solid #e5e7eb; background: #f9fafb; margin-top: auto; }
     </style>
@@ -116,26 +161,34 @@
             <div class="card-container">
                 <a href="teacher_quiz-admin.html" class="menu-card">
                     <div class="card-icon">🧩</div>
-                    <div class="card-title">역사 퀴즈 대시보드</div>
-                    <div class="card-desc">학생들의 퀴즈 참여 현황과<br>통계를 확인합니다.</div>
+                    <div>
+                        <div class="card-title">역사 퀴즈 대시보드</div>
+                        <div class="card-desc">학생들의 퀴즈 참여 현황과<br>통계를 확인합니다.</div>
+                    </div>
                 </a>
                 
                 <a href="teacher_student-list-admin.html" class="menu-card">
                     <div class="card-icon">👨‍🏫</div>
-                    <div class="card-title">학생 관리</div>
-                    <div class="card-desc">학생 명단을 관리하고<br>개별 학습 기록을 조회합니다.</div>
+                    <div>
+                        <div class="card-title">학생 관리</div>
+                        <div class="card-desc">학생 명단을 관리하고<br>개별 학습 기록을 조회합니다.</div>
+                    </div>
                 </a>
 
                 <a href="teacher_yourscore-admin.html" class="menu-card">
                     <div class="card-icon">📊</div>
-                    <div class="card-title">성적 산출 관리</div>
-                    <div class="card-desc">수행평가 점수를 입력하고<br>성취도 등급을 산출합니다.</div>
+                    <div>
+                        <div class="card-title">성적 산출 관리</div>
+                        <div class="card-desc">수행평가 점수를 입력하고<br>성취도 등급을 산출합니다.</div>
+                    </div>
                 </a>
 
                 <a href="teacher_markexam-2025-2sem.html" class="menu-card">
                     <div class="card-icon">✅</div>
-                    <div class="card-title">시험 채점 관리</div>
-                    <div class="card-desc">지필고사 답안을 채점하고<br>결과를 분석합니다.</div>
+                    <div>
+                        <div class="card-title">시험 채점 관리</div>
+                        <div class="card-desc">지필고사 답안을 채점하고<br>결과를 분석합니다.</div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -150,7 +203,6 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // [선생님 설정값]
         const firebaseConfig = {
             apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
             authDomain: "history-quiz-yongsin.firebaseapp.com",
@@ -161,15 +213,12 @@
             measurementId: "G-LHN97D7R2R"
         };
 
-        // 선생님 이메일 상수 정의
         const TEACHER_EMAIL = "westoria28@gmail.com";
 
-        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // DOM 요소 가져오기
         const loginView = document.getElementById('login-view');
         const dashboardView = document.getElementById('dashboard-view');
         const appHeader = document.getElementById('app-header');
@@ -177,66 +226,50 @@
         const logoutBtn = document.getElementById('logout-btn');
         const greetingMsg = document.getElementById('greeting-msg');
 
-        // [1] 로그인 상태 감지 (핵심 로직)
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 로그인 된 상태
-                console.log("로그인 시도 유저:", user.email);
-
                 if (user.email === TEACHER_EMAIL) {
-                    // 선생님이 맞으면 대시보드 보여주기
                     showDashboard(user);
                 } else {
-                    // 선생님이 아니면 강제 로그아웃
                     alert("접근 권한이 없습니다.\n(교사 계정 westoria28@gmail.com 만 접근 가능)");
                     signOut(auth);
                 }
             } else {
-                // 로그아웃 된 상태
                 showLogin();
             }
         });
 
-        // [2] 로그인 버튼 클릭 이벤트
         loginBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
-                // onAuthStateChanged에서 자동으로 처리됨
             } catch (error) {
                 console.error("Login Error:", error);
                 alert("로그인 중 오류가 발생했습니다: " + error.message);
             }
         });
 
-        // [3] 로그아웃 버튼 클릭 이벤트
         logoutBtn.addEventListener('click', async () => {
             if(confirm("로그아웃 하시겠습니까?")) {
                 try {
                     await signOut(auth);
-                    alert("로그아웃 되었습니다.");
-                    // onAuthStateChanged에서 자동으로 로그인 화면으로 전환됨
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
             }
         });
 
-        // [UI 함수] 대시보드 보이기
         function showDashboard(user) {
             loginView.classList.add('hidden');
             dashboardView.classList.remove('hidden');
             appHeader.classList.remove('hidden');
-            
-            // 이름 표시 (없으면 '선생님')
             const displayName = user.displayName || "선생님";
             greetingMsg.innerHTML = `반갑습니다, ${displayName} 선생님 👋`;
         }
 
-        // [UI 함수] 로그인 화면 보이기
         function showLogin() {
             dashboardView.classList.add('hidden');
-            appHeader.classList.add('hidden'); // 헤더 숨김
+            appHeader.classList.add('hidden');
             loginView.classList.remove('hidden');
         }
     </script>
