@@ -45,6 +45,7 @@
             height: 20px;
             display: flex;
             align-items: center;
+            white-space: nowrap; /* 줄바꿈 방지 */
         }
 
         .header-btn {
@@ -57,6 +58,7 @@
             border: none;
             cursor: pointer;
             transition: background 0.2s;
+            white-space: nowrap;
         }
         .header-btn:hover { background-color: #d8dadf; }
 
@@ -87,19 +89,74 @@
         /* --- [화면 B] 교사 대시보드 --- */
         #dashboard-view { max-width: 1000px; margin: 40px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
         
-        .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; }
+        .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; word-break: keep-all; }
         
-        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        /* 카드 그리드 컨테이너 */
+        .card-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 24px; 
+        }
+
+        /* PC 버전 카드 스타일 (기본) */
         .menu-card {
-            background: white; border-radius: 12px; padding: 40px 30px; text-align: center; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #ddd;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
+            background: white; border-radius: 12px; padding: 40px 30px; 
+            text-align: center; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            border: 1px solid #ddd;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%;
         }
         .menu-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-color: #1a73e8; }
         
-        .card-icon { width: 60px; height: 60px; background: #e8f0fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 20px; }
+        .card-icon { width: 60px; height: 60px; background: #e8f0fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 20px; flex-shrink: 0; }
+        .card-text-group { display: flex; flex-direction: column; } /* 텍스트 묶음 */
         .card-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #202124; }
         .card-desc { color: #5f6368; font-size: 15px; line-height: 1.5; word-break: keep-all; }
+
+        /* --- [중요] 모바일 최적화 (768px 이하) --- */
+        @media (max-width: 768px) {
+            header { padding: 16px 20px; } /* 헤더 여백 축소 */
+            .main-logo { font-size: 3rem; }
+            .main-subtitle { font-size: 1.2rem; }
+
+            /* 모바일에서는 1열로 배치 */
+            .card-container {
+                grid-template-columns: 1fr; 
+                gap: 16px;
+            }
+
+            /* 모바일 카드 스타일 변경 (가로 바 형태) */
+            .menu-card {
+                flex-direction: row; /* 가로 배치 */
+                padding: 24px 20px;
+                text-align: left; /* 텍스트 왼쪽 정렬 */
+                align-items: center; /* 수직 중앙 정렬 */
+                justify-content: flex-start; /* 왼쪽부터 시작 */
+                gap: 20px; /* 아이콘과 텍스트 사이 간격 */
+                min-height: auto; /* 높이 자동 조절 */
+            }
+
+            .card-icon {
+                margin-bottom: 0; /* 아래 여백 제거 */
+                width: 50px; 
+                height: 50px; 
+                font-size: 24px;
+            }
+
+            .card-title {
+                margin-bottom: 4px; /* 제목과 설명 사이 간격 줄임 */
+                font-size: 18px;
+            }
+            
+            .card-desc {
+                font-size: 14px;
+            }
+        }
 
         /* 4. 푸터 */
         footer {
@@ -144,20 +201,34 @@
             <div class="card-container">
                 <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="menu-card">
                     <div class="card-icon">🧩</div>
-                    <div class="card-title">역사 퀴즈 대시보드</div>
-                    <div class="card-desc">학생들의 퀴즈 참여 현황과<br>통계를 확인합니다.</div>
+                    <div class="card-text-group">
+                        <div class="card-title">역사 퀴즈 대시보드</div>
+                        <div class="card-desc">학생들의 퀴즈 참여 현황과<br>통계를 확인합니다.</div>
+                    </div>
                 </a>
                 
                 <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="menu-card">
                     <div class="card-icon">👨‍🏫</div>
-                    <div class="card-title">학생 관리</div>
-                    <div class="card-desc">학생 명단을 관리하고<br>개별 학습 기록을 조회합니다.</div>
+                    <div class="card-text-group">
+                        <div class="card-title">학생 관리</div>
+                        <div class="card-desc">학생 명단을 관리하고<br>개별 학습 기록을 조회합니다.</div>
+                    </div>
                 </a>
 
                 <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="menu-card">
                     <div class="card-icon">📈</div>
-                    <div class="card-title">성적 산출 관리</div>
-                    <div class="card-desc">수행평가 점수를 입력하고<br>성취도 등급을 산출합니다.</div>
+                    <div class="card-text-group">
+                        <div class="card-title">성적 산출 관리</div>
+                        <div class="card-desc">수행평가 점수를 입력하고<br>성취도 등급을 산출합니다.</div>
+                    </div>
+                </a>
+
+                <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="menu-card">
+                    <div class="card-icon">✅</div>
+                    <div class="card-text-group">
+                        <div class="card-title">시험 채점 관리</div>
+                        <div class="card-desc">지필고사 답안을 채점하고<br>결과를 분석합니다.</div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -169,24 +240,17 @@
 
     <script>
         function handleLogin() {
-            // 1. 화면 전환
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('dashboard-view').classList.remove('hidden');
-
-            // 2. 헤더 표시
             document.getElementById('main-header').classList.remove('hidden');
-
-            // 3. 교사 이름 설정
+            
             const teacherName = "방재석"; 
             document.getElementById('greeting-text').innerHTML = `반갑습니다, ${teacherName} 선생님 👋`;
         }
 
         function handleLogout() {
-            // 1. 화면 전환
             document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('login-view').classList.remove('hidden');
-
-            // 2. 헤더 숨김
             document.getElementById('main-header').classList.add('hidden');
         }
     </script>
