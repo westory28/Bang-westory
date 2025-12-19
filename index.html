@@ -53,6 +53,8 @@
         /* [화면 B] 학생 대시보드 */
         #dashboard-view { max-width: 1000px; margin: 40px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
         .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; }
+        
+        /* PC 기본 그리드 */
         .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
         
         .menu-card {
@@ -87,20 +89,43 @@
         }
         .save-btn:hover { background: #1557b0; }
 
-        /* 모바일 최적화 */
+        /* ============================ */
+        /* ★ 모바일 최적화 수정된 부분 ★ */
+        /* ============================ */
         @media (max-width: 768px) {
             header { padding: 12px 20px; }
             .header-logo { font-size: 20px; }
             #dashboard-view { margin: 20px auto; }
             .welcome-msg { font-size: 22px; margin-bottom: 20px; }
-            .card-container { grid-template-columns: 1fr; gap: 12px; }
+            
+            /* 카드 간격(Gap)을 넓혀서 겹침 방지 */
+            .card-container { grid-template-columns: 1fr; gap: 16px; } 
+
             .menu-card {
-                flex-direction: row; justify-content: flex-start; padding: 20px; text-align: left;
+                flex-direction: row; 
+                justify-content: flex-start; 
+                text-align: left;
+                
+                /* 높이 축소를 위해 패딩 감소 */
+                padding: 16px 20px; 
+                
+                /* PC의 높이 100% 설정을 해제하고 내용물만큼만 차지하게 함 */
+                height: auto; 
+                
+                /* 겹침 방지를 위해 그림자 축소 */
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
+            
             .menu-card:hover { transform: none; }
-            .card-icon { width: 48px; height: 48px; font-size: 24px; margin-bottom: 0; margin-right: 20px; }
-            .card-title { font-size: 18px; margin-bottom: 4px; }
-            .card-desc { font-size: 13px; }
+            
+            /* 아이콘 크기 살짝 축소하여 높이 줄임 */
+            .card-icon { 
+                width: 44px; height: 44px; font-size: 22px; 
+                margin-bottom: 0; margin-right: 16px; 
+            }
+            
+            .card-title { font-size: 17px; margin-bottom: 2px; }
+            .card-desc { font-size: 13px; margin-top: 0; }
         }
 
         /* 로딩 스피너 */
@@ -199,7 +224,6 @@
     </footer>
 
     <script>
-        // ✅ 선생님의 Firebase 프로젝트 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
             authDomain: "history-quiz-yongsin.firebaseapp.com",
@@ -210,7 +234,6 @@
             measurementId: "G-LHN97D7R2R"
         };
 
-        // Firebase 초기화
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -219,7 +242,6 @@
 
         let currentUser = null; 
 
-        // 1. 로그인 상태 감지
         auth.onAuthStateChanged(async (user) => {
             const loadingScreen = document.getElementById('loading-screen');
             const loginView = document.getElementById('login-view');
@@ -230,15 +252,11 @@
                 console.log("로그인 ID:", user.uid);
                 currentUser = user;
                 
-                // ★ 중요 수정: 'students' -> 'users'로 변경 (DB 규칙과 일치시킴)
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
 
                     if (userDoc.exists) {
-                        // A. 기존 회원 -> 대시보드 진입
                         const userData = userDoc.data();
-                        
-                        // 이름이 있으면 이름 표시, 없으면 이메일 표시
                         const displayName = userData.name || user.email;
                         document.getElementById('greeting-text').innerHTML = `반갑습니다, ${displayName} 학생님 👋`;
                         
@@ -246,10 +264,8 @@
                         dashboardView.classList.remove('hidden');
                         mainHeader.classList.remove('hidden');
                     } else {
-                        // B. 신규 회원 -> 정보 입력 모달 띄우기
                         console.log("DB에 정보 없음 (신규가입)");
                         document.getElementById('signup-modal').classList.remove('hidden');
-                        
                         loginView.classList.remove('hidden'); 
                         dashboardView.classList.add('hidden');
                         mainHeader.classList.add('hidden');
@@ -259,7 +275,6 @@
                     alert("데이터 로드 실패: " + error.message);
                 }
             } else {
-                // 로그아웃 상태
                 loginView.classList.remove('hidden');
                 dashboardView.classList.add('hidden');
                 mainHeader.classList.add('hidden');
@@ -268,29 +283,22 @@
             loadingScreen.style.display = 'none';
         });
 
-        // 2. 구글 로그인
         function handleGoogleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
-                .then((result) => {
-                    console.log("구글 로그인 성공");
-                }).catch((error) => {
+                .catch((error) => {
                     console.error("로그인 에러:", error);
                     alert("로그인 실패: " + error.message);
                 });
         }
 
-        // 3. 로그아웃
         function handleLogout() {
             auth.signOut().then(() => {
                 alert("로그아웃 되었습니다.");
                 location.reload(); 
-            }).catch((error) => {
-                console.error("로그아웃 실패:", error);
             });
         }
 
-        // 4. 정보 저장 (users 컬렉션 사용)
         function saveStudentInfo() {
             const grade = document.getElementById('input-grade').value;
             const classNum = document.getElementById('input-class').value;
@@ -303,8 +311,6 @@
             }
 
             if (currentUser) {
-                // ★ 중요 수정: 'students' -> 'users'로 변경
-                // merge: true 옵션을 넣어 기존 데이터가 있어도 안전하게 업데이트
                 db.collection('users').doc(currentUser.uid).set({
                     email: currentUser.email,
                     grade: grade,
@@ -315,7 +321,7 @@
                     lastLogin: new Date()
                 }, { merge: true }).then(() => {
                     alert("가입을 환영합니다! " + name + " 학생.");
-                    location.reload(); // 새로고침하여 대시보드로 이동
+                    location.reload(); 
                 }).catch((error) => {
                     console.error("저장 실패:", error);
                     alert("저장 중 오류가 발생했습니다: " + error.message);
