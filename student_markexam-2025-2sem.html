@@ -7,16 +7,18 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
         /* 헤더 스타일 */
-        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
+        header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 40; height: 64px; }
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
         
         .nav-link { font-weight: 500; color: #6b7280; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
@@ -30,6 +32,9 @@
         .btn-logout-text { color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; }
         .btn-logout-text:hover { color: #292524; background-color: #f5f5f4; }
 
+        /* 학생 이름 표시 스타일 */
+        .student-greeting { font-size: 0.9rem; font-weight: 700; color: #2563eb; margin-right: 1rem; display: none; } /* 기본 숨김, 로드 후 표시 */
+
         /* 모바일 메뉴 */
         .mobile-link { display: flex; align-items: center; padding: 1rem 1.5rem; color: #374151; font-weight: 500; border-bottom: 1px solid #f3f4f6; text-decoration: none; transition: background 0.2s; }
         .mobile-link:hover { background-color: #f9fafb; }
@@ -38,45 +43,62 @@
 
         /* 자가 채점 스타일 */
         .score-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        
         .omr-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #d1d5db; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: bold; transition: all 0.2s; color: #6b7280; background-color: white; }
         .omr-btn:hover { background-color: #f3f4f6; border-color: #9ca3af; }
-        
-        /* OMR 상태 클래스 */
-        .omr-btn.correct { background-color: #22c55e; color: white; border-color: #22c55e; } /* 맞음 */
-        .omr-btn.wrong { background-color: #ef4444; color: white; border-color: #ef4444; }   /* 틀림 */
-        .omr-btn.missed { border-color: #22c55e; color: #22c55e; border-width: 2px; } /* 정답 표시(틀렸을때) */
-
+        .omr-btn.correct { background-color: #22c55e; color: white; border-color: #22c55e; } 
+        .omr-btn.wrong { background-color: #ef4444; color: white; border-color: #ef4444; }   
+        .omr-btn.missed { border-color: #22c55e; color: #22c55e; border-width: 2px; } 
         .result-badge { font-weight: 800; font-size: 1.1rem; width: 2rem; text-align: center; }
         .res-o { color: #22c55e; }
         .res-x { color: #ef4444; }
-        
         .subj-box { border: 1px solid #e5e7eb; border-radius: 0.5rem; background: white; overflow: hidden; margin-bottom: 1rem; }
         .subj-header { background: #f9fafb; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
         .subj-content { padding: 1rem; }
-        
-        /* 서술형 버튼 스타일 */
         .btn-grading { transition: all 0.2s; }
         .btn-grading.active-correct { background-color: #22c55e; color: white; border-color: #22c55e; }
         .btn-grading.active-wrong { background-color: #ef4444; color: white; border-color: #ef4444; }
+
+        /* 모달 스타일 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.6); z-index: 99999; display: flex; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); max-width: 450px; width: 90%; text-align: center; }
     </style>
 </head>
 <body class="text-stone-800">
 
+    <div id="warning-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="mb-4 text-amber-500 text-5xl"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2 class="text-2xl font-bold text-amber-500 mb-2">주의사항 안내</h2>
+            <p class="text-stone-600 mb-4 leading-relaxed">
+                이 결과는 <span class="font-bold text-stone-800">참고용 시뮬레이션</span>이며,<br>
+                정확한 성적은 <span class="underline decoration-stone-400">나이스(NEIS)</span> 및 성적 통지표를 확인하세요.
+            </p>
+            <div class="bg-stone-100 p-3 rounded mb-6 text-sm text-stone-500 font-medium">
+                입력한 점수는 서버에 저장되지 않고<br>내 컴퓨터(브라우저)에만 임시로 남습니다.
+            </div>
+            <div class="flex items-center justify-center gap-2 mb-6 select-none cursor-pointer" onclick="app.toggleAgree()">
+                <div id="checkbox-ui" class="w-5 h-5 border-2 border-stone-300 rounded flex items-center justify-center text-white transition-colors"><i class="fas fa-check text-xs"></i></div>
+                <label class="cursor-pointer text-stone-700 text-sm font-bold">위 내용을 확인하였으며 동의합니다.</label>
+            </div>
+            <button id="btn-start" onclick="app.startExam()" disabled class="w-full py-3 rounded-lg font-bold text-lg transition-all duration-200 bg-stone-200 text-stone-400 cursor-not-allowed">확 인</button>
+        </div>
+    </div>
+
     <header>
         <div class="header-container relative">
-            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index.html'">
+            <div class="logo-text" onclick="location.href='index.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
 
             <nav class="hidden lg:flex gap-6 h-full">
-                <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link">역사 퀴즈</a>
-                <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-link">학습 기록</a>
-                <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-link">나의 성적표</a>
-                <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="nav-link active">시험 채점</a>
+                <a href="student_quiz-2025-2sem.html" class="nav-link">역사 퀴즈</a>
+                <a href="student_quiz-history.html" class="nav-link">학습 기록</a>
+                <a href="student_yourscore.html" class="nav-link">나의 성적표</a>
+                <a href="student_markexam-2025-2sem.html" class="nav-link active">시험 채점</a>
             </nav>
 
             <div class="flex items-center gap-2">
+                <span id="user-greeting-pc" class="student-greeting hidden lg:block"></span>
                 <button onclick="app.logout()" class="btn-logout-text hidden lg:block">로그아웃</button>
                 <button class="lg:hidden text-2xl text-stone-600 p-2 focus:outline-none mobile-menu-btn" onclick="app.toggleMobileMenu()">
                     <i class="fas fa-bars"></i>
@@ -85,10 +107,12 @@
         </div>
 
         <div id="mobile-menu" class="hidden absolute top-[64px] left-0 w-full bg-white shadow-md border-b border-stone-200 z-40 lg:hidden">
-            <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>역사 퀴즈</a>
-            <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"></path></svg>학습 기록</a>
-            <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zM7.5 15.5H9v2H7.5v-2zm0-4H9v2H7.5v-2zm4.5 4H16v2h-4v-2zm0-4H16v2h-4v-2zm4.5 4H18v2h-1.5v-2zm0-4H18v2h-1.5v-2z"></path></svg>나의 성적표</a>
-            <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="mobile-link active"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>시험 채점</a>
+            <div id="user-greeting-mobile" class="p-4 bg-blue-50 text-blue-800 font-bold text-center border-b border-blue-100 hidden"></div>
+            
+            <a href="student_quiz-2025-2sem.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>역사 퀴즈</a>
+            <a href="student_quiz-history.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"></path></svg>학습 기록</a>
+            <a href="student_yourscore.html" class="mobile-link"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zM7.5 15.5H9v2H7.5v-2zm0-4H9v2H7.5v-2zm4.5 4H16v2h-4v-2zm0-4H16v2h-4v-2zm4.5 4H18v2h-1.5v-2zm0-4H18v2h-1.5v-2z"></path></svg>나의 성적표</a>
+            <a href="student_markexam-2025-2sem.html" class="mobile-link active"><svg class="mobile-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>시험 채점</a>
             <div class="border-t border-stone-100 p-2">
                 <button onclick="app.logout()" class="w-full text-left px-4 py-3 text-stone-500 font-bold hover:bg-stone-50 rounded"><i class="fas fa-sign-out-alt mr-3"></i> 로그아웃</button>
             </div>
@@ -140,21 +164,86 @@
     </footer>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
-        let db; try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } db = firebase.firestore(); } catch(e) { console.error("Firebase Init Error", e); }
+        // [수정 1] Firebase SDK 9.6.1 compat 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
+            authDomain: "history-quiz-yongsin.firebaseapp.com",
+            projectId: "history-quiz-yongsin",
+            storageBucket: "history-quiz-yongsin.firebasestorage.app",
+            messagingSenderId: "177587430482",
+            appId: "1:177587430482:web:d79cc145c11e335cc3ab8b",
+            measurementId: "G-LHN97D7R2R"
+        };
+        
+        let db; 
+        try { 
+            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
+            db = firebase.firestore(); 
+        } catch(e) { console.error("Firebase Init Error", e); }
 
         const app = {
-            state: { totalScore: 0, maxScore: 0, examData: null, userMarks: {} },
+            state: { totalScore: 0, maxScore: 0, examData: null, userMarks: {}, isAgreed: false },
 
             init: function() {
+                // [수정 2] 로그인 상태 감지 (onAuthStateChanged)
                 firebase.auth().onAuthStateChanged((user) => {
                     if (user) {
+                        // 로그인 성공 시 로직 실행
                         this.loadExamData();
+                        this.displayUserName(user); // [수정 3] 사용자 이름 가져오기
                     } else {
+                        // 비로그인 시 메인 페이지로 리다이렉트
                         alert("로그인이 필요합니다.");
-                        location.href = 'https://westory28.github.io/Bang-westory/index.html';
+                        location.href = 'index.html'; // [수정 4] index-test.html -> index.html
                     }
                 });
+            },
+
+            // [수정 3] 사용자 이름 표시 함수
+            displayUserName: function(user) {
+                // 이메일로 users 컬렉션에서 학생 정보 조회
+                db.collection('users').where('email', '==', user.email).get().then((querySnapshot) => {
+                    if (!querySnapshot.empty) {
+                        // 첫 번째 일치하는 문서에서 이름 가져오기
+                        const studentData = querySnapshot.docs[0].data();
+                        const greeting = `${studentData.name} 학생, 화이팅!`;
+                        
+                        // PC 화면 표시
+                        const pcSpan = document.getElementById('user-greeting-pc');
+                        pcSpan.innerText = greeting;
+                        pcSpan.style.display = 'block';
+
+                        // 모바일 화면 표시
+                        const mobileDiv = document.getElementById('user-greeting-mobile');
+                        mobileDiv.innerText = greeting;
+                        mobileDiv.classList.remove('hidden');
+                    }
+                }).catch((error) => {
+                    console.log("Error getting user details:", error);
+                });
+            },
+
+            toggleAgree: function() {
+                this.state.isAgreed = !this.state.isAgreed;
+                const btn = document.getElementById('btn-start');
+                const box = document.getElementById('checkbox-ui');
+                
+                if (this.state.isAgreed) {
+                    btn.disabled = false;
+                    btn.classList.remove('bg-stone-200', 'text-stone-400', 'cursor-not-allowed');
+                    btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'shadow-md');
+                    box.classList.remove('border-stone-300'); box.classList.add('bg-blue-600', 'border-blue-600');
+                } else {
+                    btn.disabled = true;
+                    btn.classList.add('bg-stone-200', 'text-stone-400', 'cursor-not-allowed');
+                    btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'shadow-md');
+                    box.classList.add('border-stone-300'); box.classList.remove('bg-blue-600', 'border-blue-600');
+                }
+            },
+
+            startExam: function() {
+                if(!this.state.isAgreed) return;
+                document.getElementById('warning-modal').style.display = 'none';
             },
 
             toggleMobileMenu: function() {
@@ -163,7 +252,7 @@
             },
 
             logout: function() { 
-                firebase.auth().signOut().then(() => location.href='https://westory28.github.io/Bang-westory/index.html'); 
+                firebase.auth().signOut().then(() => location.href='index.html'); 
             },
 
             loadExamData: function() {
@@ -204,7 +293,6 @@
                 this.renderSubjective();
             },
 
-            // 객관식 렌더링
             renderObjective: function() {
                 const container = document.getElementById('objective-container');
                 if(!this.state.examData.objective || this.state.examData.objective.length === 0) {
@@ -231,7 +319,6 @@
                 `}).join('');
             },
 
-            // 서술형 렌더링
             renderSubjective: function() {
                 const container = document.getElementById('subjective-container');
                 if(!this.state.examData.subjective || this.state.examData.subjective.length === 0) {
@@ -268,87 +355,51 @@
                 `).join('');
             },
 
-            // [수정된 로직] 객관식 채점: 답안 수정 가능
             checkObjective: function(qNo, selected, answer, score) {
                 const prevMark = this.state.userMarks[`obj-${qNo}`];
-                
-                // 1. 기존 점수 차감 (이미 채점된 경우)
-                if (prevMark) {
-                    if (prevMark.isCorrect) this.addScore(-prevMark.score);
-                }
+                if (prevMark && prevMark.isCorrect) this.addScore(-prevMark.score);
 
-                // 2. 새로운 정오답 판별
                 const isCorrect = (Number(selected) === Number(answer));
-                
-                // 3. UI 업데이트 (모든 버튼 초기화 후 현재 상태 반영)
                 const row = document.getElementById(`obj-row-${qNo}`);
                 const buttons = row.querySelectorAll('.omr-btn');
                 const badge = document.getElementById(`res-badge-${qNo}`);
 
                 buttons.forEach((btn, idx) => {
                     const btnNum = idx + 1;
-                    // 클래스 초기화
                     btn.classList.remove('selected', 'correct', 'wrong', 'missed');
-                    btn.style.cssText = ''; // 인라인 스타일 제거
-
-                    // 내가 선택한 버튼
-                    if(btnNum === Number(selected)) {
-                        btn.classList.add(isCorrect ? 'correct' : 'wrong');
-                    }
-                    // 틀렸을 때 정답 표시 (녹색 테두리)
-                    if(!isCorrect && btnNum === Number(answer)) {
-                        btn.classList.add('missed');
-                    }
+                    btn.style.cssText = ''; 
+                    if(btnNum === Number(selected)) btn.classList.add(isCorrect ? 'correct' : 'wrong');
+                    if(!isCorrect && btnNum === Number(answer)) btn.classList.add('missed');
                 });
 
-                // 4. 점수 및 배지 업데이트
-                if(isCorrect) { 
-                    badge.innerHTML = '<i class="fas fa-circle res-o text-xs"></i>'; 
-                    this.addScore(Number(score)); 
-                } else { 
-                    badge.innerHTML = '<i class="fas fa-times res-x"></i>'; 
-                }
-
-                // 5. 상태 저장
+                if(isCorrect) { badge.innerHTML = '<i class="fas fa-circle res-o text-xs"></i>'; this.addScore(Number(score)); } 
+                else { badge.innerHTML = '<i class="fas fa-times res-x"></i>'; }
                 this.state.userMarks[`obj-${qNo}`] = { selected: selected, isCorrect: isCorrect, score: Number(score) };
             },
 
-            // 서술형 정답 공개
             revealSubjective: function(id) {
                 document.getElementById(`${id}-actions`).style.display = 'none';
                 document.getElementById(`${id}-check`).classList.remove('hidden');
             },
 
-            // [수정된 로직] 서술형 채점: 내용 유지 및 수정 가능
             gradeSubjective: function(id, score, isCorrect) {
                 const prevMark = this.state.userMarks[id];
+                if(prevMark && prevMark.isCorrect) this.addScore(-Number(score));
 
-                // 1. 기존 점수 차감
-                if(prevMark) {
-                    if(prevMark.isCorrect) this.addScore(-Number(score));
-                }
-
-                // 2. UI 업데이트 (버튼 활성화/비활성화)
                 const btnCorrect = document.getElementById(`btn-correct-${id}`);
                 const btnWrong = document.getElementById(`btn-wrong-${id}`);
                 const badge = document.getElementById(`${id}-badge`);
 
-                // 스타일 초기화
                 btnCorrect.className = 'btn-grading flex-1 bg-white border border-stone-300 text-stone-600 hover:bg-stone-50 py-2 rounded font-bold shadow-sm';
                 btnWrong.className = 'btn-grading flex-1 bg-white border border-stone-300 text-stone-600 hover:bg-stone-50 py-2 rounded font-bold shadow-sm';
 
                 if(isCorrect) {
-                    btnCorrect.classList.remove('bg-white', 'text-stone-600');
-                    btnCorrect.classList.add('active-correct');
-                    badge.innerHTML = '<i class="fas fa-circle res-o text-xs"></i>';
-                    this.addScore(Number(score));
+                    btnCorrect.classList.remove('bg-white', 'text-stone-600'); btnCorrect.classList.add('active-correct');
+                    badge.innerHTML = '<i class="fas fa-circle res-o text-xs"></i>'; this.addScore(Number(score));
                 } else {
-                    btnWrong.classList.remove('bg-white', 'text-stone-600');
-                    btnWrong.classList.add('active-wrong');
+                    btnWrong.classList.remove('bg-white', 'text-stone-600'); btnWrong.classList.add('active-wrong');
                     badge.innerHTML = '<i class="fas fa-times res-x"></i>';
                 }
-
-                // 3. 상태 저장
                 this.state.userMarks[id] = { isCorrect: isCorrect, score: Number(score) };
             },
 
@@ -357,7 +408,6 @@
                 const start = this.state.totalScore;
                 this.state.totalScore += points;
                 const end = this.state.totalScore;
-                
                 let current = start;
                 const step = () => {
                     if(current < end) { current++; el.innerText = current; requestAnimationFrame(step); } 
@@ -369,8 +419,6 @@
         };
 
         window.onload = function() { app.init(); };
-
-        // 모바일 메뉴 외부 클릭 닫기
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('mobile-menu');
             const btn = document.querySelector('.mobile-menu-btn');
