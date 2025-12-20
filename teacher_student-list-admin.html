@@ -23,7 +23,7 @@
             color: #1f2937;
         }
 
-        /* [헤더 스타일] */
+        /* [헤더 스타일] - 공통 가이드 준수 */
         header { 
             background-color: white; 
             border-bottom: 1px solid #e5e7eb; 
@@ -43,11 +43,11 @@
             justify-content: space-between;
         }
         
-        /* PC용 네비게이션 (lg 이상에서 보임) */
+        /* PC용 네비게이션 */
         .nav-link { 
             font-weight: 500; 
             color: #6b7280; 
-            margin: 0 0.75rem; /* 간격 조정 */
+            margin: 0 0.75rem; 
             text-decoration: none; 
             font-size: 0.95rem; 
             height: 100%;
@@ -64,52 +64,37 @@
             font-weight: 700; 
         }
 
-        /* 모바일용 네비게이션 스타일 */
+        /* 모바일 메뉴 스타일 */
         .mobile-menu-box {
             border-top: 1px solid #f3f4f6;
             background-color: white;
             overflow: hidden;
             transition: max-height 0.3s ease-in-out;
-            max-height: 0; /* 기본 닫힘 */
+            max-height: 0; 
         }
         .mobile-menu-box.open {
-            max-height: 300px; /* 열릴 때 최대 높이 */
+            max-height: 300px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-
         .mobile-menu-link {
-            display: flex;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f3f4f6;
-            color: #4b5563;
-            font-weight: 500;
-            text-decoration: none;
-            transition: background-color 0.2s;
+            display: flex; align-items: center; padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6; color: #4b5563;
+            font-weight: 500; text-decoration: none;
         }
-        .mobile-menu-link:hover { background-color: #f9fafb; color: #111827; }
         .mobile-menu-link.active { color: #2563eb; font-weight: 700; background-color: #eff6ff; }
-        .mobile-menu-link i { width: 24px; text-align: center; margin-right: 8px; }
-
-        .logo-text { 
-            font-size: 1.5rem; 
-            font-weight: 800; 
-            letter-spacing: -0.025em; 
-            cursor: pointer; 
-            display: flex;
-            align-items: center;
-        }
+        
+        /* 로고 스타일 */
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; }
         .logo-we { color: #2563eb; } 
         .logo-story { color: #f59e0b; }
 
-        /* 테이블 및 기타 스타일 */
+        /* 기타 스타일 */
         .admin-table th, .admin-table td { border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
         .admin-table th:not(:last-child), .admin-table td:not(:last-child) { border-right: 1px solid #e5e7eb; }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
         
-        /* 로딩 오버레이 */
         #loading-overlay { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: white; }
-
+        
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.3s ease-out; }
     </style>
@@ -118,7 +103,7 @@
 
     <div id="loading-overlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-white border-solid mb-4"></div>
-        <p class="text-xl font-bold">인증 정보 확인 중...</p>
+        <p class="text-xl font-bold">관리자 권한 확인 중...</p>
     </div>
 
     <header id="main-header">
@@ -128,32 +113,34 @@
             </div>
 
             <nav class="hidden lg:flex h-full">
-                <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">
-                    역사 퀴즈 대시보드
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link active">
-                    학생 관리
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link">
-                    성적 산출 관리
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="nav-link">
-                    시험 채점 관리
-                </a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link active">학생 관리</a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
+                <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="nav-link">시험 채점 관리</a>
             </nav>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <span id="teacher-name-display" class="hidden md:inline text-sm font-bold text-blue-600"></span>
+                
+                <span id="session-timer" class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full border border-red-200">
+                    <i class="fas fa-clock mr-1"></i><span id="timer-text">--:--</span>
+                </span>
+
                 <button onclick="app.logout()" class="text-stone-500 hover:text-stone-800 text-sm font-bold py-2 px-3 rounded hover:bg-stone-100 transition whitespace-nowrap">
                     로그아웃
                 </button>
                 
-                <button id="mobile-menu-btn" onclick="app.toggleMobileMenu(event)" class="lg:hidden text-stone-500 hover:text-stone-800 p-2 rounded focus:outline-none">
+                <button onclick="app.toggleMobileMenu(event)" class="lg:hidden text-stone-500 hover:text-stone-800 p-2 rounded focus:outline-none">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
         </div>
 
         <div id="mobile-menu" class="mobile-menu-box lg:hidden">
+            <div class="p-4 bg-blue-50 border-b border-blue-100">
+                <p id="mobile-teacher-name" class="text-sm font-bold text-blue-700 mb-1">선생님, 환영합니다!</p>
+                <p class="text-xs text-stone-500">관리자 계정 접속 중</p>
+            </div>
             <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="mobile-menu-link">
                 <i class="fas fa-chart-line text-stone-400"></i>역사 퀴즈 대시보드
             </a>
@@ -171,10 +158,14 @@
 
     <main class="flex-grow p-4 md:p-6 w-full mx-auto" style="max-width: 80rem;">
         
-        <div id="view-login-screen" style="display: none;" class="items-center justify-center min-h-[50vh]">
-            <div class="text-center">
-                <p class="text-xl font-bold text-stone-600">교사 인증이 필요합니다.</p>
-                <button onclick="app.login()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded shadow font-bold hover:bg-blue-700 transition">구글 계정 로그인</button>
+        <div id="view-forbidden" style="display: none;" class="items-center justify-center min-h-[50vh] flex-col">
+            <div class="text-center p-8 bg-white rounded shadow-xl border-t-4 border-red-500">
+                <i class="fas fa-ban text-4xl text-red-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-stone-800 mb-2">접근 권한이 없습니다.</h2>
+                <p class="text-stone-600 mb-6">오직 관리자(선생님)만 접근할 수 있는 페이지입니다.</p>
+                <button onclick="location.href='https://westory28.github.io/Bang-westory/teacher.html'" class="bg-stone-800 text-white px-6 py-2 rounded font-bold hover:bg-stone-700">
+                    홈으로 돌아가기
+                </button>
             </div>
         </div>
 
@@ -293,62 +284,96 @@
     <script>
         // --- Firebase 설정 ---
         const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
-        let db; 
+        let db, auth; 
         try { 
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
             db = firebase.firestore(); 
+            auth = firebase.auth();
         } catch(e) { console.error("Firebase 초기화 실패", e); }
 
-        const TEACHER_EMAIL = "westoria28@gmail.com";
+        // [중요] 관리자 이메일 상수 (보안 핵심)
+        const ADMIN_EMAIL = "westoria28@gmail.com";
 
         const app = {
             state: { students: [], currentStudentHistory: [], allQuestions: [] },
+            timerInterval: null,
 
             init: function() {
-                if (typeof firebase === 'undefined' || !firebase.auth) { alert("Firebase 로드 실패"); return; }
+                if (!auth) { alert("인증 시스템 오류"); return; }
                 
-                // 전역 클릭 리스너: 모바일 메뉴 바깥 클릭 시 닫기
+                // 전역 클릭 리스너 (모바일 메뉴 닫기)
                 document.addEventListener('click', (e) => {
                     const menu = document.getElementById('mobile-menu');
-                    const btn = document.getElementById('mobile-menu-btn');
+                    const btn = document.querySelector('button[onclick="app.toggleMobileMenu(event)"]');
                     if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
                         menu.classList.remove('open');
                     }
                 });
 
-                firebase.auth().onAuthStateChanged((user) => {
+                // [보안] 인증 상태 감지 및 권한 체크
+                auth.onAuthStateChanged((user) => {
                     this.showLoading(false);
-                    if (user && user.email === TEACHER_EMAIL) {
-                        // 이미 로그인 된 상태면 컨텐츠 바로 표시
-                        document.getElementById('view-login-screen').style.display = 'none';
-                        document.getElementById('view-content').style.display = 'block';
-                        this.loadStudents();
-                        this.loadQuestionsForDetail(); 
-                    } else {
-                        // 로그아웃 상태면 로그인 화면 표시
-                        document.getElementById('view-login-screen').style.display = 'flex';
-                        document.getElementById('view-content').style.display = 'none';
-                        if(user) { 
-                            alert("권한이 없는 계정입니다."); 
-                            firebase.auth().signOut(); 
-                        }
+
+                    // 1. 로그인 여부 및 이메일 검증
+                    if (!user || user.email !== ADMIN_EMAIL) {
+                        alert("⛔ 접근 권한이 없습니다. (관리자 전용)");
+                        if(user) auth.signOut(); // 잘못된 계정은 강제 로그아웃
+                        location.href = 'https://westory28.github.io/Bang-westory/teacher.html';
+                        return;
                     }
+
+                    // 2. 권한 확인 완료 -> 화면 표시
+                    document.getElementById('view-content').style.display = 'block';
+                    
+                    // 3. 사용자 이름 표시
+                    const displayName = user.displayName || "선생님";
+                    document.getElementById('teacher-name-display').innerText = `${displayName} 선생님, 화이팅!`;
+                    document.getElementById('mobile-teacher-name').innerText = `${displayName} 선생님, 환영합니다!`;
+
+                    // 4. 세션 타이머 시작
+                    this.startSessionTimer();
+
+                    // 5. 데이터 로드 시작
+                    this.loadStudents();
+                    this.loadQuestionsForDetail(); 
                 });
             },
 
-            // 모바일 메뉴 토글 함수
+            // [기능] 세션 타이머 로직 (teacher.html과 연동)
+            startSessionTimer: function() {
+                const expiry = localStorage.getItem('teacherSessionExpiry');
+                if (!expiry) {
+                    // 세션 정보가 없으면 재로그인 유도
+                    auth.signOut().then(() => location.href = 'https://westory28.github.io/Bang-westory/teacher.html');
+                    return;
+                }
+
+                this.timerInterval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = parseInt(expiry) - now;
+
+                    if (distance < 0) {
+                        clearInterval(this.timerInterval);
+                        alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+                        this.logout();
+                    } else {
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        document.getElementById('timer-text').innerText = 
+                            `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    }
+                }, 1000);
+            },
+
             toggleMobileMenu: function(event) {
-                if(event) event.stopPropagation(); // 버튼 클릭 시 즉시 닫힘 방지
-                const menu = document.getElementById('mobile-menu');
-                menu.classList.toggle('open');
+                if(event) event.stopPropagation();
+                document.getElementById('mobile-menu').classList.toggle('open');
             },
 
-            login: function() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithPopup(provider).catch((error) => alert("로그인 에러: " + error.message));
+            logout: function() {
+                localStorage.removeItem('teacherSessionExpiry'); // 세션 만료 처리
+                auth.signOut().then(() => location.href = 'https://westory28.github.io/Bang-westory/teacher.html');
             },
-
-            logout: function() { firebase.auth().signOut().then(() => location.reload()); },
             
             showLoading: function(show) { 
                 document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; 
@@ -362,7 +387,7 @@
                 });
             },
 
-            // --- 학생 관리 로직 (기존 유지) ---
+            // --- 학생 관리 로직 ---
             loadStudents: function() {
                 this.showLoading(true);
                 db.collection("users").get().then((snapshot) => {
@@ -379,7 +404,9 @@
                     this.showLoading(false);
                 }).catch(e => { 
                     this.showLoading(false); 
-                    alert("로드 실패: " + e.message); 
+                    console.error("로드 에러:", e);
+                    // 권한 문제일 경우 Firestore 보안 규칙 확인 필요
+                    if(e.code === 'permission-denied') alert("데이터 접근 권한이 없습니다.");
                 });
             },
 
@@ -432,7 +459,7 @@
                 this.renderStudentList(filtered);
             },
 
-            // --- 정보 수정 및 삭제, 기록 조회 로직 (기존과 동일) ---
+            // --- 정보 수정 및 삭제, 기록 조회 로직 ---
             openStudentEdit: function(docId) {
                 const s = this.state.students.find(x => x.docId === docId); if(!s) return;
                 document.getElementById('edit-std-docId').value = s.docId; 
