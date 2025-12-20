@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Westory - 시험 채점</title>
+    <title>Westory - 역사 퀴즈</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -16,7 +16,7 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; }
         
-        /* 헤더 스타일 (공통) */
+        /* [헤더 스타일] */
         header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; height: 64px; }
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
         
@@ -32,7 +32,7 @@
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
-        /* 모바일 메뉴 스타일 */
+        /* 모바일 메뉴 */
         .mobile-menu-btn { display: block; font-size: 1.5rem; color: #4b5563; cursor: pointer; padding: 0.5rem; }
         @media (min-width: 1024px) { .mobile-menu-btn { display: none; } }
         #mobile-menu { position: absolute; top: 64px; left: 0; width: 100%; background-color: white; border-bottom: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: none; flex-direction: column; z-index: 40; }
@@ -40,6 +40,12 @@
         .mobile-link { padding: 1rem 1.5rem; font-weight: 500; color: #4b5563; text-decoration: none; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
         .mobile-link.active { color: #2563eb; background-color: #eff6ff; font-weight: 700; border-left: 4px solid #2563eb; }
         .btn-logout-text { color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: transparent; border: none; cursor: pointer; }
+
+        /* 퀴즈 리스트 스타일 */
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1.25rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; margin-bottom: 0.75rem; }
+        .list-item.active { cursor: pointer; border-left: 5px solid #2563eb; }
+        .list-item.active:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .list-item.locked { cursor: not-allowed; background-color: #f9fafb; border-left: 5px solid #d1d5db; opacity: 0.7; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -51,10 +57,10 @@
             </div>
     
             <nav class="desktop-nav">
-                <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link">역사 퀴즈</a>
+                <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="nav-link active">역사 퀴즈</a>
                 <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="nav-link">학습 기록</a>
                 <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="nav-link">나의 성적표</a>
-                <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="nav-link active">시험 채점</a>
+                <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="nav-link">시험 채점</a>
             </nav>
     
             <div class="flex items-center gap-4">
@@ -64,31 +70,84 @@
                 </button>
             </div>
         </div>
+
         <div id="mobile-menu">
-            <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="mobile-link">역사 퀴즈</a>
+            <a href="https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html" class="mobile-link active">역사 퀴즈</a>
             <a href="https://westory28.github.io/Bang-westory/student_quiz-history.html" class="mobile-link">학습 기록</a>
             <a href="https://westory28.github.io/Bang-westory/student_yourscore.html" class="mobile-link">나의 성적표</a>
-            <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="mobile-link active">시험 채점</a>
+            <a href="https://westory28.github.io/Bang-westory/student_markexam-2025-2sem.html" class="mobile-link">시험 채점</a>
             <button onclick="logout()" class="w-full text-left p-4 font-bold text-stone-500 bg-stone-50">로그아웃</button>
         </div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8 max-w-3xl">
         
-        <div id="greeting-area" class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded shadow-sm mb-6 flex items-center justify-between hidden">
+        <div id="greeting-area" class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded shadow-sm mb-8 flex items-center justify-between hidden fade-in">
             <div>
                 <span class="text-blue-700 font-bold text-lg" id="user-name-display">학생</span>
-                <span class="text-blue-600 font-medium">님, 화이팅! 💪</span>
+                <span class="text-blue-600 font-medium">님, 오늘도 화이팅! 🔥</span>
             </div>
-            <i class="fas fa-pencil-alt text-blue-200 text-2xl"></i>
         </div>
 
-        <section class="bg-white rounded-xl shadow border border-stone-200 p-8 text-center">
-            <h2 class="text-2xl font-bold text-stone-800 mb-4">시험 채점 (OMR)</h2>
-            <p class="text-stone-500 mb-8">시험지 답안을 입력하고 점수를 확인하세요.</p>
+        <section class="mb-10">
+            <h2 class="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
+                <span class="bg-blue-600 w-1.5 h-6 rounded-sm"></span>
+                현재 진행 중인 평가
+            </h2>
             
-            <div class="p-10 border-2 border-dashed border-stone-300 rounded-lg bg-stone-50 text-stone-400">
-                기능 준비 중입니다...
+            <div onclick="location.href='https://westory28.github.io/Bang-westory/student_quiz-2025-2sem-last.html'" class="group cursor-pointer bg-white rounded-xl shadow border border-stone-200 overflow-hidden hover:border-blue-400 transition relative">
+                <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg shadow-sm z-10">D-DAY</div>
+                <div class="flex items-stretch">
+                    <div class="bg-blue-50 w-24 flex items-center justify-center text-3xl group-hover:bg-blue-100 transition">
+                        🏫
+                    </div>
+                    <div class="p-5 flex-grow">
+                        <div class="text-blue-600 font-bold text-xs mb-1">2025학년도 2학기</div>
+                        <h3 class="text-xl font-bold text-stone-900 mb-1">2학기 역사 정리 퀴즈</h3>
+                        <p class="text-stone-500 text-sm">성적표 반영 | 총 20문항</p>
+                    </div>
+                    <div class="flex items-center pr-5">
+                        <i class="fas fa-chevron-right text-stone-300 group-hover:text-blue-500"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
+                <span class="bg-amber-500 w-1.5 h-6 rounded-sm"></span>
+                2026학년도 1학기 예습
+            </h2>
+
+            <div class="flex flex-col">
+                <div class="list-item locked">
+                    <div>
+                        <div class="text-xs text-stone-400 font-bold mb-1">1단원</div>
+                        <h3 class="text-lg font-bold text-stone-500">문명의 형성</h3>
+                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
+                </div>
+                <div class="list-item locked">
+                    <div>
+                        <div class="text-xs text-stone-400 font-bold mb-1">2단원</div>
+                        <h3 class="text-lg font-bold text-stone-500">고조선의 성립</h3>
+                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
+                </div>
+                <div class="list-item locked">
+                    <div>
+                        <div class="text-xs text-stone-400 font-bold mb-1">3단원</div>
+                        <h3 class="text-lg font-bold text-stone-500">삼국 시대의 전개</h3>
+                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
+                </div>
+                <div class="list-item locked">
+                    <div>
+                        <div class="text-xs text-stone-400 font-bold mb-1">4단원</div>
+                        <h3 class="text-lg font-bold text-stone-500">통일 신라와 발해</h3>
+                    </div>
+                    <div class="text-right"><span class="bg-stone-200 text-stone-500 text-xs font-bold px-2 py-1 rounded">준비중</span></div>
+                </div>
             </div>
         </section>
 
@@ -99,7 +158,7 @@
     </footer>
 
     <script>
-        // 1. 선생님의 Firebase 설정값 적용
+        // 1. Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
             authDomain: "history-quiz-yongsin.firebaseapp.com",
@@ -109,7 +168,7 @@
             appId: "1:177587430482:web:d79cc145c11e335cc3ab8b",
             measurementId: "G-LHN97D7R2R"
         };
-
+        
         // Firebase 초기화 (중복 방지)
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
@@ -117,39 +176,33 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // [수정 2] 로그인 상태 감지 및 리다이렉트 로직
+        // 2. 로그인 상태 체크 & 사용자 정보 로드
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // 1) 로그인 된 상태: 유저 정보 가져오기
-                console.log("로그인 확인됨:", user.uid);
+                // 로그인 됨: 사용자 이름 가져오기
                 await loadUserInfo(user.uid);
             } else {
-                // 2) 로그인 안 된 상태: 메인 페이지로 튕겨내기
-                alert("로그인이 필요한 페이지입니다.");
-                location.href = 'https://westory28.github.io/Bang-westory/index.html';
+                // 로그인 안 됨: 메인(index.html)으로 이동
+                location.href = 'https://westory28.github.io/Bang-westory/index.html'; 
             }
         });
 
-        // [수정 3] Firestore에서 사용자 이름 가져오기
+        // 3. 사용자 이름 가져오는 함수
         async function loadUserInfo(uid) {
             try {
                 const doc = await db.collection('users').doc(uid).get();
                 if (doc.exists) {
                     const data = doc.data();
-                    const name = data.name || "학생"; // 이름이 없으면 '학생'으로 표시
-                    
-                    // 화면에 이름 표시
+                    const name = data.name || "학생";
                     document.getElementById('user-name-display').innerText = name + " 학생";
-                    document.getElementById('greeting-area').classList.remove('hidden'); // 숨겨둔 영역 표시
-                } else {
-                    console.log("유저 정보 문서가 없습니다.");
+                    document.getElementById('greeting-area').classList.remove('hidden'); // 이름 영역 표시
                 }
-            } catch (error) {
-                console.error("정보 로딩 실패:", error);
+            } catch (e) {
+                console.error("사용자 정보 로드 실패", e);
             }
         }
 
-        // 로그아웃 함수
+        // 로그아웃
         function logout() {
             if(confirm("로그아웃 하시겠습니까?")) {
                 auth.signOut().then(() => {
@@ -157,6 +210,23 @@
                 });
             }
         }
+
+        // 모바일 메뉴 토글 (외부 클릭 시 닫기 포함)
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('mobile-menu-btn');
+            
+            // 햄버거 버튼 클릭 시 토글
+            if (btn.contains(e.target)) {
+                menu.classList.toggle('open');
+                return;
+            }
+
+            // 메뉴 외부 클릭 시 닫기
+            if (menu.classList.contains('open') && !menu.contains(e.target)) {
+                menu.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
