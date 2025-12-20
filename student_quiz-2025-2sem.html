@@ -46,13 +46,17 @@
         .list-item.active { cursor: pointer; border-left: 5px solid #2563eb; }
         .list-item.active:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .list-item.locked { cursor: not-allowed; background-color: #f9fafb; border-left: 5px solid #d1d5db; opacity: 0.7; }
+        
+        /* 애니메이션 */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <header>
         <div class="header-container">
-            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/student_quiz-2025-2sem.html'">
+            <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/index.html'">
                 <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
     
@@ -182,7 +186,7 @@
                 // 로그인 됨: 사용자 이름 가져오기
                 await loadUserInfo(user.uid);
             } else {
-                // 로그인 안 됨: 메인(index.html)으로 이동
+                // 로그인 안 됨: 홈(index.html)으로 이동
                 location.href = 'https://westory28.github.io/Bang-westory/index.html'; 
             }
         });
