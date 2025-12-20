@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>교사 대시보드 - 평가 기준 관리</title>
+    <title>교사 대시보드 - 성적 산출 관리</title>
     <style>
         /* 기본 스타일 */
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
         a { text-decoration: none; color: inherit; }
         * { box-sizing: border-box; }
 
-        /* 헤더 스타일 (Sticky, 가이드라인 준수) */
+        /* [공통 헤더 가이드라인] + 반응형 */
         header { background-color: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
         
         .header-container { 
@@ -23,15 +23,27 @@
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
-        /* PC 네비게이션 (모바일에서 숨김) */
+        /* PC 네비게이션 */
         .nav-container { display: flex; height: 100%; }
         .nav-link { font-weight: 500; color: #6b7280; margin: 0 1rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; }
         .nav-link:hover { color: #111827; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
 
-        /* 우측 버튼 그룹 (로그아웃 + 햄버거) */
-        .right-actions { display: flex; align-items: center; gap: 10px; }
+        /* 우측 사용자 정보 및 액션 그룹 */
+        .right-actions { display: flex; align-items: center; gap: 15px; }
 
+        /* 환영 문구 */
+        .welcome-msg { font-size: 0.9rem; font-weight: 600; color: #4b5563; display: none; } /* 모바일엔 공간 부족으로 숨길 수도 있음 */
+        @media (min-width: 768px) { .welcome-msg { display: block; } }
+
+        /* 타이머 배지 */
+        .timer-badge {
+            background-color: #ef4444; color: white; font-size: 0.85rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 9999px; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        /* 로그아웃 버튼 */
         .btn-logout-custom {
             color: #78716c; font-size: 0.875rem; font-weight: 700; padding: 0.5rem 0.75rem;
             border-radius: 0.25rem; background-color: transparent; border: none; cursor: pointer; transition: all 0.2s;
@@ -39,10 +51,10 @@
         }
         .btn-logout-custom:hover { color: #292524; background-color: #f5f5f4; }
 
-        /* 햄버거 버튼 (PC에서 숨김) */
+        /* 햄버거 버튼 */
         .hamburger-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; padding: 5px; }
         
-        /* 모바일 드롭다운 메뉴 (기본 숨김) */
+        /* 모바일 드롭다운 메뉴 */
         .mobile-menu { display: none; background-color: #f8f9fa; border-top: 1px solid #e5e7eb; padding: 10px 0; position: absolute; width: 100%; left: 0; top: 64px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 49; }
         .mobile-menu.open { display: block; }
         .mobile-link { 
@@ -55,21 +67,25 @@
         .mobile-link.active { color: #2563eb; background-color: #eff6ff; font-weight: 700; }
         .mobile-icon { margin-right: 12px; width: 20px; height: 20px; fill: currentColor; }
 
-        /* 반응형 미디어 쿼리 (1024px 이하일 때 모바일 전환) */
+        /* 반응형 (1024px 이하) */
         @media (max-width: 1024px) {
-            .nav-container { display: none; } /* PC 메뉴 숨김 */
-            .hamburger-btn { display: block; } /* 햄버거 버튼 표시 */
+            .nav-container { display: none; }
+            .hamburger-btn { display: block; }
             .header-container { padding: 0 1rem; }
         }
 
-        /* 기존 페이지 스타일 */
+        /* 메인 컨텐츠 레이아웃 */
         .container { max-width: 1600px; margin: 0 auto; padding: 30px 20px; min-height: calc(100vh - 200px); }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-title { font-size: 24px; font-weight: 800; color: #2c3e50; margin: 0; border-bottom: 3px solid #3498db; padding-bottom: 5px; display: inline-block; }
 
-        #loginSection { max-width: 400px; margin: 100px auto; text-align: center; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-google { background-color: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; font-size: 16px; width: 100%; cursor: pointer; border-radius: 6px; margin-top: 20px; transition: background 0.2s; }
-        .btn-google:hover { background-color: #f8f9fa; }
+        /* 로딩 스피너 (인증 체크 중 표시) */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: bold; color: #2563eb;
+        }
 
         .dashboard-layout { display: flex; flex-direction: column; gap: 30px; }
         .left-panel { display: flex; flex-direction: column; gap: 20px; }
@@ -79,14 +95,12 @@
             .dashboard-layout { flex-direction: row; align-items: flex-start; }
             .left-panel { flex: 1; } 
             .right-panel { 
-                flex: 1;
-                height: calc(100vh - 120px); 
-                overflow-y: auto; 
-                position: sticky; top: 84px;
-                padding-right: 10px; 
+                flex: 1; height: calc(100vh - 120px); overflow-y: auto; 
+                position: sticky; top: 84px; padding-right: 10px; 
             }
         }
 
+        /* 필터 및 카드 스타일 */
         .big-filter-card { background-color: #e3f2fd; border: 2px solid #2196f3; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2); }
         .filter-header { font-size: 16px; font-weight: bold; color: #1565c0; margin-bottom: 10px; }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -137,133 +151,129 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-    <div id="loginSection">
-        <h2>🔐 선생님 로그인</h2>
-        <p>평가 기준 관리 페이지입니다.<br>선생님 계정으로 로그인해주세요.</p>
-        <button class="btn-google" onclick="loginWithGoogle()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20">
-            Google 계정으로 로그인
-        </button>
+    
+    <div id="loadingOverlay">
+        🔒 보안 접속 확인 중...
     </div>
 
-    <div id="dashboardSection" class="hidden">
-        
-        <header>
-            <div class="header-container">
-                <div class="logo-text" onclick="location.href='https://westory28.github.io/Bang-westory/teacher.html'">
-                    <span class="logo-we">We</span><span class="logo-story">story</span>
-                </div>
-        
-                <nav class="nav-container">
-                    <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
-                    <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="nav-link">학생 관리</a>
-                    <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="nav-link active">성적 산출 관리</a>
-                    <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="nav-link">시험 채점 관리</a>
-                </nav>
-        
-                <div class="right-actions">
-                    <button onclick="logout()" class="btn-logout-custom">
-                        로그아웃
-                    </button>
-                    <button class="hamburger-btn" onclick="toggleMobileMenu()">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
+    <header>
+        <div class="header-container">
+            <div class="logo-text" onclick="goMain()">
+                <span class="logo-we">We</span><span class="logo-story">story</span>
             </div>
-
-            <div id="mobileMenu" class="mobile-menu">
-                <a href="https://westory28.github.io/Bang-westory/teacher_quiz-admin.html" class="mobile-link">
-                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
-                    역사 퀴즈 대시보드
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_student-list-admin.html" class="mobile-link">
-                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
-                    학생 관리
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_yourscore-admin.html" class="mobile-link active">
-                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h5v-2h-5v2zm0-4h5v-2h-5v2zm0-4h5V7h-5v2zM7 7h5v2H7V7zm0 4h5v2H7v-2zm0 4h5v2H7v-2z"/></svg>
-                    성적 산출 관리
-                </a>
-                <a href="https://westory28.github.io/Bang-westory/teacher_markexam-2025-2sem.html" class="mobile-link">
-                    <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/></svg>
-                    시험 채점 관리
-                </a>
-            </div>
-        </header>
-
-        <div class="container">
-            <div class="page-header">
-                <h1 class="page-title">📝 평가 기준 관리</h1>
-            </div>
-
-            <div class="dashboard-layout">
-                
-                <div class="left-panel">
-                    <div class="big-filter-card">
-                        <div class="filter-header">📌 조회 필터 설정</div>
-                        <div class="filter-row">
-                            <select id="yearFilter" onchange="handleFilterChange()">
-                                <option value="2025">2025학년도</option>
-                                <option value="2026">2026학년도</option>
-                                <option value="2027">2027학년도</option>
-                            </select>
-                            <select id="semesterFilter" onchange="handleFilterChange()">
-                                <option value="1학기">1학기</option>
-                                <option value="2학기">2학기</option>
-                            </select>
-                            <select id="gradeFilter" onchange="handleFilterChange()">
-                                <option value="1학년">1학년</option>
-                                <option value="2학년">2학년</option>
-                                <option value="3학년">3학년</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="input-card">
-                        <div class="section-title">
-                            <span id="formTitle">✏️ 평가 기준 등록</span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>과목명</label>
-                            <input type="text" id="subjectName" placeholder="예: 한국사, 사회">
-                        </div>
-
-                        <label>평가 항목 (만점 / 반영비율)</label>
-                        <div id="criteriaList"></div>
-                        
-                        <button class="btn-add" onclick="addRow()">+ 항목 추가</button>
-                        <button id="saveBtn" class="btn-save" onclick="saveToFirebase()">💾 기준 저장하기</button>
-                        <button id="cancelBtn" class="btn-cancel" onclick="resetForm()">취소 (입력 초기화)</button>
-                    </div>
+    
+            <nav class="nav-container">
+                <a href="teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
+                <a href="teacher_student-list-admin.html" class="nav-link">학생 관리</a>
+                <a href="teacher_yourscore-admin.html" class="nav-link active">성적 산출 관리</a>
+                <a href="teacher_markexam-2025-2sem.html" class="nav-link">시험 채점 관리</a>
+            </nav>
+    
+            <div class="right-actions">
+                <span id="welcomeMsg" class="welcome-msg">선생님, 화이팅!</span>
+                <div id="sessionTimer" class="timer-badge">
+                    <i class="fas fa-clock"></i> <span>60:00</span>
                 </div>
-
-                <div class="right-panel">
-                    <div class="list-header">
-                        <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
-                        <select id="sortFilter" class="sort-select" onchange="handleFilterChange()">
-                            <option value="custom">교과 기본순 (국영수...)</option>
-                            <option value="name">과목 가나다순 (ㄱ-ㅎ)</option>
-                            <option value="latest">최신 등록순</option>
-                        </select>
-                    </div>
-                    
-                    <div id="savedPlansList"></div>
-                </div>
-
+                <button onclick="handleLogout()" class="btn-logout-custom">
+                    로그아웃
+                </button>
+                <button class="hamburger-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
 
-        <footer class="main-footer">
-            Copyright © 역사교사 방재석. All rights reserved.
-        </footer>
+        <div id="mobileMenu" class="mobile-menu">
+            <a href="teacher_quiz-admin.html" class="mobile-link">
+                <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+                역사 퀴즈 대시보드
+            </a>
+            <a href="teacher_student-list-admin.html" class="mobile-link">
+                <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                학생 관리
+            </a>
+            <a href="teacher_yourscore-admin.html" class="mobile-link active">
+                <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h5v-2h-5v2zm0-4h5v-2h-5v2zm0-4h5V7h-5v2zM7 7h5v2H7V7zm0 4h5v2H7v-2zm0 4h5v2H7v-2z"/></svg>
+                성적 산출 관리
+            </a>
+            <a href="teacher_markexam-2025-2sem.html" class="mobile-link">
+                <svg class="mobile-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/></svg>
+                시험 채점 관리
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">📝 평가 기준 관리</h1>
+        </div>
+
+        <div class="dashboard-layout">
+            
+            <div class="left-panel">
+                <div class="big-filter-card">
+                    <div class="filter-header">📌 조회 필터 설정</div>
+                    <div class="filter-row">
+                        <select id="yearFilter" onchange="handleFilterChange()">
+                            <option value="2025">2025학년도</option>
+                            <option value="2026">2026학년도</option>
+                            <option value="2027">2027학년도</option>
+                        </select>
+                        <select id="semesterFilter" onchange="handleFilterChange()">
+                            <option value="1학기">1학기</option>
+                            <option value="2학기">2학기</option>
+                        </select>
+                        <select id="gradeFilter" onchange="handleFilterChange()">
+                            <option value="1학년">1학년</option>
+                            <option value="2학년">2학년</option>
+                            <option value="3학년">3학년</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-card">
+                    <div class="section-title">
+                        <span id="formTitle">✏️ 평가 기준 등록</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>과목명</label>
+                        <input type="text" id="subjectName" placeholder="예: 한국사, 사회">
+                    </div>
+
+                    <label>평가 항목 (만점 / 반영비율)</label>
+                    <div id="criteriaList"></div>
+                    
+                    <button class="btn-add" onclick="addRow()">+ 항목 추가</button>
+                    <button id="saveBtn" class="btn-save" onclick="saveToFirebase()">💾 기준 저장하기</button>
+                    <button id="cancelBtn" class="btn-cancel" onclick="resetForm()">취소 (입력 초기화)</button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="list-header">
+                    <h3 style="margin:0; color:#555;">📂 등록된 평가 기준 목록</h3>
+                    <select id="sortFilter" class="sort-select" onchange="handleFilterChange()">
+                        <option value="custom">교과 기본순 (국영수...)</option>
+                        <option value="name">과목 가나다순 (ㄱ-ㅎ)</option>
+                        <option value="latest">최신 등록순</option>
+                    </select>
+                </div>
+                
+                <div id="savedPlansList"></div>
+            </div>
+
+        </div>
     </div>
+
+    <footer class="main-footer">
+        Copyright © 역사교사 방재석. All rights reserved.
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
@@ -281,8 +291,9 @@
 
         let editingDocId = null;
         let allPlansData = [];
+        let timerInterval = null;
 
-        // 교과목 우선순위 정의
+        // 교과목 우선순위
         const subjectPriority = {
             "국어": 1, "영어": 2, "수학": 3, 
             "사회": 4, "역사": 5, "한국사": 5, 
@@ -290,40 +301,96 @@
             "체육": 9, "음악": 10, "미술": 11, 
             "한문": 12, "정보": 13, "진로": 14
         };
+
+        // --- [1. 보안 및 세션 로직] ---
         
-        // ★ 모바일 메뉴 토글 함수 (전역)
+        // 메인 대시보드 URL
+        const MAIN_DASHBOARD_URL = 'teacher.html';
+
+        // 페이지 로드 시 즉시 실행
+        onAuthStateChanged(auth, (user) => {
+            if (!user || user.email !== "westoria28@gmail.com") {
+                // 비로그인 또는 권한 없는 계정일 경우 즉시 추방
+                alert("🚫 접근 권한이 없습니다. (관리자 전용)");
+                signOut(auth).then(() => {
+                    window.location.href = MAIN_DASHBOARD_URL;
+                });
+                return;
+            }
+
+            // [인증 성공]
+            document.getElementById('loadingOverlay').style.display = 'none';
+            
+            // 1. 사용자 이름 표시
+            const userName = user.displayName || "방재석";
+            document.getElementById('welcomeMsg').innerText = `${userName} 선생님, 화이팅!`;
+
+            // 2. 세션 타이머 시작 (localStorage 연동)
+            startSessionTimer();
+
+            // 3. 데이터 로드 시작
+            loadSavedPlans();
+            addRow();
+        });
+
+        // 세션 타이머 기능
+        function startSessionTimer() {
+            // teacher.html에서 설정한 만료시간 가져오기
+            let expiryTime = localStorage.getItem("teacherSessionExpiry");
+            
+            // 만약 없으면(직접 접속 등) 현재 시간 + 60분으로 새로 설정 (보안상 킥이 맞지만 편의상 세션 생성)
+            if (!expiryTime) {
+                expiryTime = Date.now() + (60 * 60 * 1000);
+                localStorage.setItem("teacherSessionExpiry", expiryTime);
+            }
+
+            const timerDisplay = document.querySelector("#sessionTimer span");
+
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const timeLeft = parseInt(expiryTime) - now;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+                    handleLogout();
+                } else {
+                    const minutes = Math.floor(timeLeft / 60000);
+                    const seconds = Math.floor((timeLeft % 60000) / 1000);
+                    timerDisplay.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // 로그아웃 처리
+        window.handleLogout = async () => {
+            if(confirm("로그아웃 하시겠습니까?")) {
+                localStorage.removeItem("teacherSessionExpiry"); // 세션 삭제
+                await signOut(auth);
+                window.location.href = MAIN_DASHBOARD_URL;
+            }
+        };
+
+        // 로고 클릭 시 이동
+        window.goMain = () => {
+            window.location.href = "teacher-test.html"; // 요청하신 teacher-test.html (추후 teacher.html로 변경 가능)
+        };
+
+        // --- [2. UI 및 기존 로직] ---
+
         window.toggleMobileMenu = () => {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('open');
         };
 
-        // ★ 모바일 메뉴 외부 클릭 시 닫기
+        // 모바일 메뉴 외부 클릭 시 닫기
         document.addEventListener('click', (e) => {
             const menu = document.getElementById('mobileMenu');
             const btn = document.querySelector('.hamburger-btn');
-            // 메뉴가 열려있고, 클릭한 대상이 메뉴나 햄버거 버튼 내부가 아닐 경우 닫음
             if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
                 menu.classList.remove('open');
             }
         });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.email === "westoria28@gmail.com") {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                loadSavedPlans();
-                addRow();
-            } else if (user) {
-                alert("🚫 접근 거부\n'westoria28@gmail.com' 계정만 가능합니다.");
-                signOut(auth);
-            } else {
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('dashboardSection').classList.add('hidden');
-            }
-        });
-
-        window.loginWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { console.error(e); alert("로그인 오류"); } };
-        window.logout = async () => { if(confirm("로그아웃 하시겠습니까?")) { await signOut(auth); location.reload(); } };
 
         window.handleFilterChange = () => { renderPlansList(); };
 
@@ -403,7 +470,7 @@
             const data = allPlansData.find(p => p.id === id);
             if(!data) return;
             editingDocId = id;
-
+            
             if(data.academicYear) document.getElementById('yearFilter').value = data.academicYear;
             document.getElementById('semesterFilter').value = data.semester || "1학기";
             document.getElementById('gradeFilter').value = data.grade || "1학년";
