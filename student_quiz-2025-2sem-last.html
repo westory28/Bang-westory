@@ -7,13 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 배경색 이슈 해결: body 전체에 배경색 적용 */
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f5f5f4; }
         .serif { font-family: 'Noto Serif KR', serif; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -40,20 +41,19 @@
         #image-zoom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; cursor: zoom-out; }
         #image-zoom-content { max-width: 95%; max-height: 95%; border-radius: 4px; }
         
-        /* 네비게이션 스타일 */
-        .nav-item { position: relative; display: flex; align-items: center; height: 100%; padding: 0 8px; font-weight: bold; color: #57534e; transition: color 0.2s; white-space: nowrap; }
+        /* 네비게이션 스타일 (크기 확대) */
+        .nav-item { position: relative; display: flex; align-items: center; height: 100%; padding: 0 8px; font-weight: bold; color: #57534e; transition: color 0.2s; white-space: nowrap; font-size: 1rem; /* text-base 크기 */ }
         .nav-item:hover { color: #1c1917; }
         .nav-item.active { color: #2563eb; }
         .nav-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: #2563eb; }
         
         /* 모바일 메뉴 아이템 스타일 */
-        .mobile-nav-item { display: block; padding: 12px 16px; font-weight: bold; color: #57534e; border-radius: 8px; transition: background-color 0.2s; }
+        .mobile-nav-item { display: block; padding: 12px 16px; font-weight: bold; color: #57534e; border-radius: 8px; transition: background-color 0.2s; font-size: 1rem; }
         .mobile-nav-item:hover { background-color: #f5f5f4; }
         .mobile-nav-item.active { background-color: #eff6ff; color: #2563eb; }
     </style>
 </head>
-<body class="text-stone-800 min-h-screen flex flex-col bg-white">
-    <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold text-stone-700" id="loading-text">인증 확인 중...</p></div>
+<body class="text-stone-800 min-h-screen flex flex-col bg-stone-50"> <div id="loading-overlay"><div class="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-600 border-solid mb-4"></div><p class="text-xl font-bold text-stone-700" id="loading-text">인증 확인 중...</p></div>
     
     <div id="image-zoom-modal" onclick="document.getElementById('image-zoom-modal').style.display='none'"><img id="image-zoom-content" src=""></div>
 
@@ -63,14 +63,15 @@
                 <span class="text-blue-600">We</span><span class="text-amber-500">story</span>
             </div>
 
-            <nav class="hidden lg:flex h-full gap-6 text-sm desktop-nav">
+            <nav class="hidden lg:flex h-full gap-8 text-base desktop-nav">
                 <a href="student_quiz-2025-2sem.html" class="nav-item active">역사 퀴즈</a>
                 <a href="student_quiz-history.html" class="nav-item">학습 기록</a>
                 <a href="student_yourscore.html" class="nav-item">나의 성적표</a>
                 <a href="student_markexam-2025-2sem.html" class="nav-item">시험 채점</a>
             </nav>
 
-            <div class="hidden lg:block">
+            <div class="hidden lg:flex items-center gap-4">
+                <span id="header-user-msg" class="text-stone-700 font-bold text-sm"></span>
                 <button onclick="app.handleLogout()" class="bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold px-4 py-2 rounded-full transition-colors">
                     로그아웃
                 </button>
@@ -82,6 +83,7 @@
         </div>
 
         <div id="mobile-menu" class="hidden absolute top-16 left-0 w-full bg-white shadow-lg border-t border-stone-100 lg:hidden flex-col p-4 gap-2 z-40 fade-in">
+            <div class="px-4 py-2 text-blue-600 font-bold border-b border-stone-100 mb-2" id="mobile-user-msg"></div>
             <a href="student_quiz-2025-2sem.html" class="mobile-nav-item active">역사 퀴즈</a>
             <a href="student_quiz-history.html" class="mobile-nav-item">학습 기록</a>
             <a href="student_yourscore.html" class="mobile-nav-item">나의 성적표</a>
@@ -93,15 +95,15 @@
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-6 bg-stone-50 min-h-[calc(100vh-4rem)]">
+    <main class="flex-grow container mx-auto px-4 py-6">
         <section id="view-login" class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg fade-in mt-8 border-t-4 border-amber-500 text-center">
             <div class="mb-8">
-                <span class="bg-amber-100 text-amber-900 text-sm font-bold px-3 py-1 rounded-full">용신중학교 2학년 2학기 역사1</span>
-                <h2 class="text-2xl font-bold serif text-stone-900 mt-4">역사 퀴즈 평가</h2>
-                <p class="text-stone-500 mt-2 text-sm">학교 구글 계정으로 로그인하세요.</p>
+                <span class="bg-amber-100 text-amber-900 text-sm font-bold px-3 py-1 rounded-full">로그인 필요</span>
+                <h2 class="text-2xl font-bold serif text-stone-900 mt-4">WeStory 접속</h2>
+                <p class="text-stone-500 mt-2 text-sm">로그인이 필요한 서비스입니다.<br>메인 화면으로 이동합니다.</p>
             </div>
-            <button onclick="app.loginWithGoogle()" class="w-full bg-white border border-stone-300 text-stone-700 font-bold py-4 rounded-lg hover:bg-stone-50 transition shadow-sm flex items-center justify-center gap-3">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"> 구글 계정으로 시작하기
+            <button onclick="location.href='index.html'" class="w-full bg-stone-900 text-white font-bold py-4 rounded-lg hover:bg-stone-700 transition shadow-sm">
+                메인으로 이동
             </button>
         </section>
 
@@ -177,7 +179,16 @@
     </footer>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU", authDomain: "history-quiz-yongsin.firebaseapp.com", projectId: "history-quiz-yongsin", storageBucket: "history-quiz-yongsin.firebasestorage.app", messagingSenderId: "177587430482", appId: "1:177587430482:web:d79cc145c11e335cc3ab8b", measurementId: "G-LHN97D7R2R" };
+        // 선생님의 설정값 반영
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOlPQ5PFmL0zxmGrGcuEBnqBXisph7kPU",
+            authDomain: "history-quiz-yongsin.firebaseapp.com",
+            projectId: "history-quiz-yongsin",
+            storageBucket: "history-quiz-yongsin.firebasestorage.app",
+            messagingSenderId: "177587430482",
+            appId: "1:177587430482:web:d79cc145c11e335cc3ab8b",
+            measurementId: "G-LHN97D7R2R"
+        };
         
         let db; 
         try { 
@@ -205,14 +216,18 @@
 
                 this.updateVisitCount();
                 
-                // 인증 상태 확인 (중복 로그인 방지 포함)
+                // [중요] 로그인 감지 로직
                 firebase.auth().onAuthStateChanged((user) => {
                     if (user) {
+                        // 로그인 상태: 즉시 유저 정보 가져오기
                         this.state.currentUser = user;
                         this.checkUserProfile(user.uid);
                     } else {
-                        this.showView('view-login');
+                        // 비로그인 상태: 알림 후 메인 페이지(index.html)로 튕겨내기
                         this.showLoading(false);
+                        // 잠시 로그인 뷰를 보여주거나 바로 리다이렉트
+                        alert("로그인이 필요한 서비스입니다.\n메인 화면에서 로그인해주세요.");
+                        location.href = 'index.html'; 
                     }
                 });
             },
@@ -226,25 +241,26 @@
             // 로그아웃 처리
             handleLogout: function() {
                 firebase.auth().signOut().then(() => {
-                    location.reload();
-                });
-            },
-
-            loginWithGoogle: function() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithPopup(provider).catch((error) => {
-                    alert("로그인 실패: " + error.message);
+                    location.href = 'index.html'; // 로그아웃 시 메인으로
                 });
             },
 
             checkUserProfile: async function(uid) {
                 document.getElementById('loading-text').innerText = "학생 정보 확인 중...";
                 const doc = await db.collection('users').doc(uid).get();
+                
                 if (doc.exists) {
                     this.state.userProfile = doc.data();
-                    document.getElementById('user-info-display').innerText = `${this.state.userProfile.class}반 ${this.state.userProfile.number}번 ${this.state.userProfile.name}`;
+                    const name = this.state.userProfile.name;
+                    
+                    // [UI 업데이트] 헤더 및 화면에 이름 표시
+                    document.getElementById('user-info-display').innerText = `${this.state.userProfile.class}반 ${this.state.userProfile.number}번 ${name}`;
+                    document.getElementById('header-user-msg').innerText = `${name} 학생, 화이팅!`;
+                    document.getElementById('mobile-user-msg').innerText = `${name} 학생, 화이팅!`;
+                    
                     this.showView('view-ready');
                 } else {
+                    // 로그인 했으나 정보 등록이 안된 경우
                     this.showView('view-register');
                 }
                 this.showLoading(false);
@@ -270,7 +286,12 @@
                     const profile = { class: cls, number: num, name: name, email: this.state.currentUser.email };
                     await db.collection('users').doc(this.state.currentUser.uid).set(profile);
                     this.state.userProfile = profile;
+                    
+                    // 등록 후 UI 즉시 업데이트
                     document.getElementById('user-info-display').innerText = `${cls}반 ${num}번 ${name}`;
+                    document.getElementById('header-user-msg').innerText = `${name} 학생, 화이팅!`;
+                    document.getElementById('mobile-user-msg').innerText = `${name} 학생, 화이팅!`;
+                    
                     this.showView('view-ready');
                 } catch(e) {
                     if(e.code === 'failed-precondition') { alert("시스템 초기화가 필요합니다 (Index). 관리자에게 문의하세요."); } 
