@@ -22,25 +22,23 @@
         
         .header-container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
         
-        .nav-link { font-weight: 500; color: #6b7280; margin: 0 1rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; cursor: pointer; }
+        .nav-group { display: flex; align-items: center; height: 100%; }
+        .nav-link { font-weight: 500; color: #6b7280; margin-right: 1.5rem; text-decoration: none; font-size: 0.95rem; height: 100%; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s; cursor: pointer; }
         .nav-link:hover { color: #111827; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
         
-        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; }
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; cursor: pointer; display: flex; align-items: center; margin-right: 2rem; }
         .logo-we { color: #2563eb; }
         .logo-story { color: #f59e0b; }
 
+        /* 우측 정보 그룹 */
+        .right-group { display: flex; align-items: center; gap: 16px; font-size: 14px; font-weight: 600; color: #4b5563; }
+        .teacher-name { color: #111827; }
+        .timer-badge { background-color: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+
         /* 버튼 스타일 */
-        .text-stone-500 { color: #78716c; }
-        .hover\:text-stone-800:hover { color: #292524; }
-        .text-sm { font-size: 0.875rem; }
-        .font-bold { font-weight: 700; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .rounded { border-radius: 0.25rem; }
-        .hover\:bg-stone-100:hover { background-color: #f5f5f4; }
-        .transition { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        button { border: none; background: transparent; cursor: pointer; }
+        .logout-btn { color: #6b7280; background: none; border: none; font-weight: 600; font-size: 14px; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .logout-btn:hover { background-color: #f3f4f6; color: #1f2937; }
 
         /* 로그인 뷰 */
         #login-view { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
@@ -58,11 +56,7 @@
         .welcome-msg { font-size: 28px; font-weight: 700; margin-bottom: 40px; color: #1c1e21; }
 
         /* [PC용 그리드 설정] */
-        .card-container { 
-            display: grid; 
-            gap: 24px; 
-            grid-template-columns: repeat(4, 1fr); 
-        }
+        .card-container { display: grid; gap: 24px; grid-template-columns: repeat(4, 1fr); }
 
         /* [카드 공통 스타일] */
         .menu-card {
@@ -76,46 +70,29 @@
         .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #111827; }
         .card-desc { color: #6b7280; font-size: 0.95rem; line-height: 1.5; word-break: keep-all; }
 
-        /* [★모바일 최적화 수정 - 768px 이하] */
+        /* [모바일 최적화 수정 - 768px 이하] */
         @media (max-width: 768px) {
-            /* 헤더 및 타이틀 축소 */
             .header-container { padding: 0 1rem; }
-            .logo-text { font-size: 1.3rem; }
+            .logo-text { font-size: 1.3rem; margin-right: 1rem; }
+            .nav-link { display: none !important; } /* 모바일에서 상단 메뉴 숨김 */
+            .right-group { font-size: 12px; gap: 8px; } /* 상단 정보 축소 */
+
             #dashboard-view { margin: 20px auto; padding: 0 16px; }
             .welcome-msg { font-size: 1.5rem; margin-bottom: 24px; }
 
-            /* 1. 컨테이너를 Flex 컬럼으로 변경하여 간격 강제 */
-            .card-container {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 16px !important; /* 카드 사이 간격 확실하게 부여 */
-            }
+            .card-container { display: flex !important; flex-direction: column !important; gap: 16px !important; }
 
-            /* 2. 카드 스타일: 가로 배치, 높이 축소 */
             .menu-card {
-                flex-direction: row !important; /* 가로 정렬 */
-                padding: 16px 20px !important;  /* 패딩을 줄여서 카드 높이 축소 */
-                text-align: left;
-                align-items: center;
-                justify-content: flex-start;
-                gap: 20px;
-                min-height: auto; /* 최소 높이 해제 */
-                width: 100%; /* 가로 꽉 차게 */
-                box-sizing: border-box;
+                flex-direction: row !important; padding: 16px 20px !important;
+                text-align: left; align-items: center; justify-content: flex-start;
+                gap: 20px; min-height: auto; width: 100%; box-sizing: border-box;
             }
 
-            /* 3. 아이콘 및 텍스트 크기 조정 */
-            .card-icon {
-                margin-bottom: 0;
-                width: 48px; 
-                height: 48px;
-                font-size: 24px;
-            }
+            .card-icon { margin-bottom: 0; width: 48px; height: 48px; font-size: 24px; }
             .card-title { font-size: 1.1rem; margin-bottom: 4px; }
             .card-desc { font-size: 0.85rem; line-height: 1.3; }
         }
 
-        /* [태블릿 반응형] */
         @media (min-width: 769px) and (max-width: 1024px) {
             .card-container { grid-template-columns: repeat(2, 1fr); }
         }
@@ -127,19 +104,23 @@
 
     <header id="app-header" class="hidden">
         <div class="header-container">
-            <div class="logo-text" onclick="location.reload()">
-                <span class="logo-we">We</span><span class="logo-story">story</span>
+            <div class="nav-group">
+                <div class="logo-text" onclick="location.reload()">
+                    <span class="logo-we">We</span><span class="logo-story">story</span>
+                </div>
+        
+                <nav class="hidden md:flex h-full" style="display: flex;">
+                    <a href="teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
+                    <a href="teacher_student-list-admin.html" class="nav-link">학생 관리</a>
+                    <a href="teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
+                </nav>
             </div>
-    
-            <nav class="hidden md:flex h-full" style="display: flex;">
-                <a href="teacher_quiz-admin.html" class="nav-link">역사 퀴즈 대시보드</a>
-                <a href="teacher_student-list-admin.html" class="nav-link">학생 관리</a>
-                <a href="teacher_yourscore-admin.html" class="nav-link">성적 산출 관리</a>
-            </nav>
-    
-            <button id="logout-btn" class="text-stone-500 hover:text-stone-800 text-sm font-bold py-2 px-3 rounded hover:bg-stone-100 transition">
-                로그아웃
-            </button>
+
+            <div class="right-group">
+                <span class="teacher-name" id="header-name">선생님, 화이팅!</span>
+                <span class="timer-badge" id="session-timer">60:00</span>
+                <button id="logout-btn" class="logout-btn">로그아웃</button>
+            </div>
         </div>
     </header>
 
@@ -215,6 +196,7 @@
         };
 
         const TEACHER_EMAIL = "westoria28@gmail.com";
+        const SESSION_DURATION_MS = 60 * 60 * 1000; // 60분
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -226,37 +208,83 @@
         const loginBtn = document.getElementById('google-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const greetingMsg = document.getElementById('greeting-msg');
+        const headerName = document.getElementById('header-name');
+        const timerBadge = document.getElementById('session-timer');
 
+        let timerInterval;
+
+        // [핵심] 로그인 상태 감지 및 타이머 로직
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.email === TEACHER_EMAIL) {
+                    // 로그인 성공 시 UI 표시
                     showDashboard(user);
+                    
+                    // 세션 만료 시간 설정 (없거나 이미 지났으면 새로 갱신)
+                    const savedExpiry = localStorage.getItem('teacherSessionExpiry');
+                    const now = Date.now();
+
+                    if (!savedExpiry || now > parseInt(savedExpiry)) {
+                        // 새로 로그인했거나 시간이 만료된 상태에서 재접속 -> 60분 리셋
+                        const newExpiry = now + SESSION_DURATION_MS;
+                        localStorage.setItem('teacherSessionExpiry', newExpiry);
+                        startTimer(newExpiry);
+                    } else {
+                        // 기존 세션 유지 -> 남은 시간으로 타이머 시작
+                        startTimer(parseInt(savedExpiry));
+                    }
+
                 } else {
                     alert("접근 권한이 없습니다.\n(교사 계정 westoria28@gmail.com 만 접근 가능)");
                     signOut(auth);
                 }
             } else {
+                // 로그아웃 상태
                 showLogin();
+                clearInterval(timerInterval);
+                localStorage.removeItem('teacherSessionExpiry'); // 로그아웃 시 세션 정보 삭제
             }
         });
+
+        // 타이머 함수
+        function startTimer(expiryTime) {
+            clearInterval(timerInterval);
+            
+            function update() {
+                const now = Date.now();
+                const diff = expiryTime - now;
+
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    timerBadge.innerText = "00:00";
+                    alert("로그인 세션(60분)이 만료되었습니다. 다시 로그인해주세요.");
+                    signOut(auth);
+                    return;
+                }
+
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                timerBadge.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            update(); // 즉시 실행
+            timerInterval = setInterval(update, 1000); // 1초마다 갱신
+        }
 
         loginBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
+                // 로그인 시도 시 세션 시간 리셋을 위해 스토리지 클리어
+                localStorage.removeItem('teacherSessionExpiry');
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Login Error:", error);
-                alert("로그인 중 오류가 발생했습니다: " + error.message);
+                alert("로그인 오류: " + error.message);
             }
         });
 
         logoutBtn.addEventListener('click', async () => {
             if(confirm("로그아웃 하시겠습니까?")) {
-                try {
-                    await signOut(auth);
-                } catch (error) {
-                    console.error("Logout Error:", error);
-                }
+                await signOut(auth);
             }
         });
 
@@ -264,8 +292,10 @@
             loginView.classList.add('hidden');
             dashboardView.classList.remove('hidden');
             appHeader.classList.remove('hidden');
-            const displayName = user.displayName || "선생님";
-            greetingMsg.innerHTML = `반갑습니다, ${displayName} 선생님 👋`;
+            
+            const name = user.displayName || "선생님";
+            greetingMsg.innerHTML = `반갑습니다, ${name} 선생님 👋`;
+            headerName.innerText = `${name} 선생님, 화이팅!`;
         }
 
         function showLogin() {
