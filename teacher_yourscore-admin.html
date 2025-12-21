@@ -33,7 +33,7 @@
         .right-actions { display: flex; align-items: center; gap: 15px; }
 
         /* 환영 문구 */
-        .welcome-msg { font-size: 0.9rem; font-weight: 600; color: #4b5563; display: none; } /* 모바일엔 공간 부족으로 숨길 수도 있음 */
+        .welcome-msg { font-size: 0.9rem; font-weight: 600; color: #4b5563; display: none; }
         @media (min-width: 768px) { .welcome-msg { display: block; } }
 
         /* 타이머 배지 */
@@ -79,7 +79,7 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-title { font-size: 24px; font-weight: 800; color: #2c3e50; margin: 0; border-bottom: 3px solid #3498db; padding-bottom: 5px; display: inline-block; }
 
-        /* 로딩 스피너 (인증 체크 중 표시) */
+        /* 로딩 스피너 */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.9); z-index: 9999;
@@ -100,7 +100,6 @@
             }
         }
 
-        /* 필터 및 카드 스타일 */
         .big-filter-card { background-color: #e3f2fd; border: 2px solid #2196f3; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2); }
         .filter-header { font-size: 16px; font-weight: bold; color: #1565c0; margin-bottom: 10px; }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -114,12 +113,50 @@
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
         input:focus { border-color: #3498db; outline: none; }
 
+        /* 평가 항목 리스트 (기본) */
         #criteriaList { background-color: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; }
         .criteria-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .c-type { flex: 0 0 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
         .c-name { flex: 3; min-width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
         .c-max, .c-ratio { flex: 1; min-width: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
         .remove-btn { flex: 0 0 40px; background: #e74c3c; color: white; border: none; height: 38px; border-radius: 4px; cursor: pointer; }
+
+        /* ★ [중요] 모바일 평가 항목 반응형 수정 ★ */
+        @media (max-width: 768px) {
+            .criteria-row {
+                flex-wrap: wrap; /* 줄바꿈 허용 */
+                gap: 8px; /* 간격 축소 */
+                background-color: #fff; /* 배경 흰색으로 구분 */
+                padding: 10px;
+                border: 1px solid #eee;
+                border-radius: 8px;
+            }
+            
+            /* 1번째 줄: 유형(30%) + 항목명(나머지) */
+            .c-type {
+                flex: 0 0 30%;
+                min-width: 0; /* 넘침 방지 */
+            }
+            .c-name {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            /* 2번째 줄: 만점, 비율, 삭제버튼 */
+            .c-max, .c-ratio {
+                flex: 1 1 0; /* 남은 공간 균등 분할 */
+                min-width: 0;
+            }
+            .remove-btn {
+                flex: 0 0 40px; /* 버튼 고정 */
+            }
+            
+            /* 입력창 내부 패딩 축소 */
+            input[type="text"], input[type="number"], select {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
 
         .btn-add { background-color: #3498db; color: white; padding: 12px; width: 100%; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         .btn-save { background-color: #2ecc71; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
@@ -338,7 +375,7 @@
             // teacher.html에서 설정한 만료시간 가져오기
             let expiryTime = localStorage.getItem("teacherSessionExpiry");
             
-            // 만약 없으면(직접 접속 등) 현재 시간 + 60분으로 새로 설정 (보안상 킥이 맞지만 편의상 세션 생성)
+            // 만약 없으면(직접 접속 등) 현재 시간 + 60분으로 새로 설정
             if (!expiryTime) {
                 expiryTime = Date.now() + (60 * 60 * 1000);
                 localStorage.setItem("teacherSessionExpiry", expiryTime);
@@ -373,7 +410,7 @@
 
         // 로고 클릭 시 이동
         window.goMain = () => {
-            window.location.href = "teacher-test.html"; // 요청하신 teacher-test.html (추후 teacher.html로 변경 가능)
+            window.location.href = "teacher-test.html";
         };
 
         // --- [2. UI 및 기존 로직] ---
